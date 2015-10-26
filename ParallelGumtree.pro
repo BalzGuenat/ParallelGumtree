@@ -6,14 +6,16 @@ CONFIG += c++11
 
 SOURCES += main.cpp \
     tree.cpp \
-    fileparser.cpp
+    fileparser.cpp \
+    matcher.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
 
 HEADERS += \
     tree.h \
-    fileparser.h
+    fileparser.h \
+    matcher.h
 
 DISTFILES += \
     test_tree
