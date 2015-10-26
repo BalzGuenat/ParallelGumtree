@@ -14,6 +14,7 @@ Tree* FileParser::parse(string filepath) {
   for (string line; getline(file, line); ) {
       unsigned depth = 0; // TODO compute correctly. This is the indentation level.
       while (iswspace(line[depth++]));
+      depth--;
 
       // We walk up the tree until we are at the right depth.
       while (parents.size() > depth)
