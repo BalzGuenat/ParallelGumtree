@@ -9,7 +9,8 @@ SOURCES += main.cpp \
     fileparser.cpp \
     matcher.cpp \
     filewriter.cpp \
-    matchingdumper.cpp
+    matchingdumper.cpp \
+    treecreator.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
@@ -19,7 +20,8 @@ HEADERS += \
     fileparser.h \
     matcher.h \
     filewriter.h \
-    matchingdumper.h
+    matchingdumper.h \
+    treecreator.h
 
 DISTFILES += \
     test_tree

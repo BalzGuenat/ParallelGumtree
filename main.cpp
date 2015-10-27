@@ -3,6 +3,7 @@
 #include "fileparser.h"
 #include "matcher.h"
 #include "filewriter.h"
+#include "treecreator.h"
 
 using namespace std;
 
