@@ -7,6 +7,12 @@ string Tree::toString() const {
   return to_string(_type) + ':' + _label;
 }
 
+Tree::~Tree() {
+  for (auto c : _children) {
+      delete c;
+    }
+}
+
 string Tree::subTreeToString() const {
   auto strings = subTreeToStringVector();
   string subTreeString;

@@ -10,8 +10,8 @@ using matching = map<Tree*, Tree*>;
 
 class Matcher
 {
-	public:
-		Matcher();
+public:
+  Matcher();
 };
 
 #endif // MATCHER_H

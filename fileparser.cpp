@@ -27,6 +27,7 @@ Tree* FileParser::parse(string filepath) {
     }
   while (parents.size() > 1)
     parents.pop();
+  file.close();
   return parents.empty() ? nullptr : parents.top();
 }
 

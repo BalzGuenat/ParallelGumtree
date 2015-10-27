@@ -7,7 +7,9 @@ CONFIG += c++11
 SOURCES += main.cpp \
     tree.cpp \
     fileparser.cpp \
-    matcher.cpp
+    matcher.cpp \
+    filewriter.cpp \
+    matchingdumper.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
@@ -15,7 +17,9 @@ qtcAddDeployment()
 HEADERS += \
     tree.h \
     fileparser.h \
-    matcher.h
+    matcher.h \
+    filewriter.h \
+    matchingdumper.h
 
 DISTFILES += \
     test_tree
