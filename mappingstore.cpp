@@ -14,9 +14,9 @@ MappingStore::MappingStore(Set<Mapping> mappings)
     }
 }
 
-Set<Mapping>* MappingStore::asSet()
+set<Mapping>* MappingStore::asSet()
 {
-  Set<Mapping> mappings;
+  set<Mapping> mappings;
   for(unordered_map<Mapping>::iterator it = srcs.begin(); it != srcs.end(); it++)
     {
       (*mappings).insert(make_pair((*it).first, (*it).second));

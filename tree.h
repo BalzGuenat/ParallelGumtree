@@ -22,6 +22,10 @@ public:
   Tree* parent() const;
   vector<Tree*> children() const;
 
+  //To be implemented ?
+  vector<Tree*> get_trees();
+  void set_matched(bool);
+
   string toString() const;
   string subTreeToString() const;
 private:

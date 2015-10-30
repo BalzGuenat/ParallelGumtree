@@ -7,7 +7,7 @@
 class MatchingDumper
 {
 public:
-  static void write(matching matching, string filepath);
+  static void write(Mapping mapping, string filepath);
 };
 
 #endif // MATCHINGDUMPER_H

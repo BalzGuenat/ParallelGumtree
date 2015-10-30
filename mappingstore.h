@@ -3,7 +3,10 @@
 
 #include <unordered_map>
 #include <set>
-using Mapping = pair<Tree*, Tree*>;
+#include <utility>
+#include <tree.h>
+
+using Mapping = std::pair<Tree*, Tree*>;
 
 
 class MappingStore
@@ -12,8 +15,8 @@ private:
     unordered_map<Tree* , Tree*> srcs;
     unordered_map<Tree*, Tree*> dsts;
 public:
-    void MappingStore(Set<Mapping>);
-    void MappingStore();
+    MappingStore(set<Mapping>);
+    MappingStore();
     set<Mapping>* asSet();
     MappingStore copy();
     void link(Tree *src, Tree *dst);
@@ -25,7 +28,7 @@ public:
     bool has_src(Tree* src);
     bool has_dst(Tree* dst);
     bool has(Tree* src, Tree* dst);
-    unordered_map::iterator get_iterator_begin();
-    unordered_map::iterator get_iterator_end();
+    unordered_map<Tree*, Tree*>::iterator get_iterator_begin();
+    unordered_map<Tree*, Tree*>::iterator get_iterator_end();
 };
 #endif // MAPPING_STORE
