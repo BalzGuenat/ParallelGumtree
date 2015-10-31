@@ -7,8 +7,8 @@ class Matcher
 {
 
 protected:
-  const Tree* src;
-  const Tree* dst;
+  Tree* src;
+  Tree* dst;
   MappingStore* mappings;
 
   void add_mapping(Tree* src, Tree* dst);

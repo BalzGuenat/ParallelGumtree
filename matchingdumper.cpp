@@ -1,11 +1,12 @@
 #include "matchingdumper.h"
 #include <fstream>
 
-void MatchingDumper::write(Mapping mapping, string filepath) {
+
+void MatchingDumper::write(MappingStore mappings, string filepath) {
   ofstream file(filepath);
-  for (auto match : mapping) {
-      file << match.first->lineNumber() << ", ";
-      file << match.second->lineNumber() << endl;
+  for (unordered_map<Tree*, Tree*>::iterator it = mappings.get_iterator_begin(); it != mappings.get_iterator_end(); it ++) {
+      file << (*it).first->lineNumber() << ", ";
+      file << (*it).second->lineNumber() << endl;
     }
   file.close();
 }
