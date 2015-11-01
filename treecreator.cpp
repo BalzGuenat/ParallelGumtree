@@ -18,7 +18,7 @@ static const char alphanum[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz";
 
-void TreeCreater::createLabels(){
+void TreeCreator::createLabels(){
   unsigned alphanumSize = sizeof(TreeCreator::alphanum) - 1;
   TreeCreator::label_counter = 0; // reset label counter
   for (int j = 0; j<100; j++) { // create 100 new labels
@@ -31,7 +31,7 @@ void TreeCreater::createLabels(){
     }
 }
 
-void TreeCreater::newTrees(unsigned depth, unsigned maxChildren, string filepath){
+void TreeCreator::newTrees(unsigned depth, unsigned maxChildren, string filepath){
   srand (time(NULL)); // get new random seed
   maxNumberTypes = maxTypes;
 
