@@ -12,7 +12,8 @@ SOURCES += main.cpp \
     matchingdumper.cpp \
     treecreator.cpp \
     mappingstore.cpp \
-    subtreematcher.cpp
+    subtreematcher.cpp \
+    greedysubtreematcher.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
@@ -25,7 +26,8 @@ HEADERS += \
     matchingdumper.h \
     treecreator.h \
     mappingstore.h \
-    subtreematcher.h
+    subtreematcher.h \
+    greedysubtreematcher.h
 
 DISTFILES += \
     test_tree
