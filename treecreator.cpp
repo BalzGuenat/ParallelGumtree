@@ -8,22 +8,22 @@
 
 using namespace std;
 
-static unsigned label_counter = 99;
-// "Settings"
-static const bool minHalfFull = true;
-static const unsigned maxTypes = 100;
-static const unsigned maxLabelLength = 50;
-static const char alphanum[] =
-    "0123456789"
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    "abcdefghijklmnopqrstuvwxyz";
-
 void TreeCreator::createLabels(){
+  /* TODO Chris, this method seems extremely error prone, please absolutely test this...
+   * s is a local variable and stored on the stack but you store its position into a static data structure.
+   * in the inner loop, you evaluate rand() each loop. Is this on purpose?
+   * You don't null-terminate a string after what seems to be the randomly chosen label length but
+   * rather always after maxLabelLength.
+   * Try to work with the string class instead of char[]. It makes lots of stuff easier and safer.
+   * I do realize you might not be able to do that as you randomly assign each character in the string.
+   * Why do you generate labels randomly in the first place? Why not just have a counter that counts up?
+   * That way you even get the guarantee that you don't repeat labels and it's much easier.
+   */
   unsigned alphanumSize = sizeof(TreeCreator::alphanum) - 1;
   TreeCreator::label_counter = 0; // reset label counter
   for (int j = 0; j<100; j++) { // create 100 new labels
       char s[TreeCreator::maxLabelLength];
-      for (int i = 0; i < (rand() % TreeCreator::maxLabelLength-1)+1; ++i) { // label length, minimally 1
+      for (unsigned i = 0; i < (rand() % TreeCreator::maxLabelLength-1)+1; ++i) { // label length, minimally 1
           s[i] = TreeCreator::alphanum[rand() % alphanumSize];
         }
       s[TreeCreator::maxLabelLength] = 0;
@@ -33,7 +33,6 @@ void TreeCreator::createLabels(){
 
 void TreeCreator::newTrees(unsigned depth, unsigned maxChildren, string filepath){
   srand (time(NULL)); // get new random seed
-  maxNumberTypes = maxTypes;
 
   vector<Tree *> nodes[depth]; // stores pointers to each node on each level
   nodes[0].push_back(new Tree(rNumber(), rLabel(), 0)); //
@@ -43,7 +42,7 @@ void TreeCreator::newTrees(unsigned depth, unsigned maxChildren, string filepath
   for (unsigned curDepth = 0; curDepth < depth; curDepth++){
 
       // iterate over all trees on the current depth
-      for (vector<Tree *>::iterator it = nodes[curDepth].begin(); it != nodes[curDepth].end(); ++it) {
+      for (auto currentDepthNode : nodes[curDepth]) {
 
           // create random number of children for this one each
           unsigned numbChild;
@@ -55,8 +54,9 @@ void TreeCreator::newTrees(unsigned depth, unsigned maxChildren, string filepath
               numbChild = rand() % maxChildren;
             }
           for (unsigned n = 0; n < numbChild; n++) {
-              Tree t = new Tree(rNumber(), rLabel(), 0);
-              it.children.push_back(t);
+              auto t = new Tree(rNumber(), rLabel(), 0);
+              t->_parent = currentDepthNode;
+              currentDepthNode->_children.push_back(t);
               nodes[curDepth+1].push_back(t);
             }
         }

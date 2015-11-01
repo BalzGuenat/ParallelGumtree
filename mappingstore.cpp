@@ -1,32 +1,29 @@
 #include "mappingstore.h"
 
 
-MappingStore::MappingStore()
-{
+MappingStore::MappingStore() {}
 
-}
-
-MappingStore::MappingStore(Set<Mapping> mappings)
+MappingStore::MappingStore(set<Mapping> mappings)
 {
-  for(Set<Mapping>::iterator it = mappings.begin(); it != mappings.end(); it++)
+  for(auto m : mappings)
     {
-      MappingStore::link((*it).first, (*it).second);
+      link(m.first, m.second);
     }
 }
 
-set<Mapping>* MappingStore::asSet()
+set<Mapping> MappingStore::asSet()
 {
   set<Mapping> mappings;
-  for(unordered_map<Mapping>::iterator it = srcs.begin(); it != srcs.end(); it++)
+  for (auto m : srcs)
     {
-      (*mappings).insert(make_pair((*it).first, (*it).second));
+      mappings.insert(make_pair(m.first, m.second));
     }
   return mappings;
 }
 
 MappingStore MappingStore::copy()
 {
-  return MappingStore::MappingStore(MappingStore::asSet());
+  return MappingStore(asSet());
 }
 
 void MappingStore::link(Tree *src, Tree *dst)
@@ -43,12 +40,14 @@ void MappingStore::unlink(Tree *src, Tree *dst)
 
 Tree* MappingStore::first_mapped_src_parent(Tree *src)
 {
-  Tree *parent = (*src).parent();
-  if(parent == null) return null;
-  else{
-      while(!has_src(parent)){
-          parent = (*parent).parent;
-          if(parent == null) return null;
+  auto parent = src->parent();
+  if (!parent)
+    return nullptr;
+  else {
+      while (!has_src(parent)) {
+          parent = parent->parent();
+          if (!parent)
+            return nullptr;
         }
       return parent;
     }
@@ -56,52 +55,72 @@ Tree* MappingStore::first_mapped_src_parent(Tree *src)
 
 Tree* MappingStore::first_mapped_dst_parent(Tree *dst)
 {
-  Tree *parent = (*dst).parent();
-  if(parent == null) return null;
-  else{
-      while(!has_dst(parent)){
-          parent = (*parent).parent;
-          if(parent == null) return null;
+  auto parent = dst->parent();
+  if (!parent)
+    return nullptr;
+  else {
+      while (!has_dst(parent)) {
+          parent = parent->parent();
+          if (!parent)
+            return nullptr;
         }
       return parent;
     }
 }
 
 Tree* MappingStore::get_dst(Tree *src){
-  return srcs(src);
+  return srcs.at(src);
 }
 
 Tree* MappingStore::get_src(Tree *dst)
 {
-  return dsts(dst);
+  return dsts.at(dst);
 }
 
 bool MappingStore::has_src(Tree *src)
 {
-
+  try {
+    srcs.at(src);
+    return true;
+  } catch (out_of_range) {
+      return false;
+  }
 }
 
 bool MappingStore::has_dst(Tree *dst)
 {
-
+  try {
+    dsts.at(dst);
+    return true;
+  } catch (out_of_range) {
+      return false;
+  }
 }
 
 bool MappingStore::has(Tree *src, Tree *dst)
 {
-  return srcs(src) == dst;
+  try {
+    return srcs.at(src) == dst;
+  } catch (out_of_range) {
+    return false;
+  }
 }
 
-unordered_map::iterator MappingStore::get_iterator_begin()
+unordered_map<Tree*, Tree*>::iterator MappingStore::get_iterator_begin()
 {
  return srcs.begin();
 }
 
-unordered_map::iterator MappingStore::get_iterator_end()
+unordered_map<Tree*, Tree*>::iterator MappingStore::get_iterator_end()
 {
  return srcs.end();
 }
-
+/*
 MappingStore::~MappingStore()
 {
 //What's that?
+  // This is a destructor. It gets called when the object is deallocated/deleted.
+  // It's purpose is to delete/free all resources this object owns.
+  // Currently, leaving it empty is fine.
 }
+*/

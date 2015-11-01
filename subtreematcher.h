@@ -1,30 +1,28 @@
 #ifndef SUBTREEMATCHER_H
 #define SUBTREEMATCHER_H
 
+#include "matcher.h"
+
+class MultiMappingStore; // TODO define this class.
 
 class SubTreeMatcher : public Matcher
 {
 protected:
 
-  double sim(ITree src, ITree dst);
+  double sim(Tree* src, Tree* dst);
   int getMaxTreeSize();
 
 public:
-  SubtreeMatcher(ITree src, ITree dst, MappingStore store);
-  void match();
-  virtual void filterMappings(MultiMappingStore mmappings) = 0;
-
+  SubTreeMatcher(Tree* src, Tree* dst, MappingStore* store);
   ~SubTreeMatcher();
+  void match();
+  virtual void filterMappings(MultiMappingStore* mmappings) = 0;
 
-private:
-  static int MIN_HEIGHT;//TODO
-  void popLarger(PriorityTreeList srcs, PriorityTreeList dsts);
 
+//private:
   class PriorityTreeList
   {
   private:
-
-
     vector<Tree*> trees;
     int maxHeight;
     int currentIdx;
@@ -42,6 +40,9 @@ private:
     void updateHeight();
 
   };
+private:
+  void popLarger(PriorityTreeList &srcs, PriorityTreeList &dsts);
+  static int MIN_HEIGHT;//TODO
 
 };
 

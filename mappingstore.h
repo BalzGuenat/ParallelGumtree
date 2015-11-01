@@ -6,18 +6,17 @@
 #include <utility>
 #include <tree.h>
 
-using Mapping = std::pair<Tree*, Tree*>;
-
+using Mapping = pair<Tree*, Tree*>;
 
 class MappingStore
 {
 private:
-    unordered_map<Tree* , Tree*> srcs;
+    unordered_map<Tree*, Tree*> srcs;
     unordered_map<Tree*, Tree*> dsts;
 public:
     MappingStore(set<Mapping>);
     MappingStore();
-    set<Mapping>* asSet();
+    set<Mapping> asSet();
     MappingStore copy();
     void link(Tree *src, Tree *dst);
     void unlink(Tree *src, Tree *dst);

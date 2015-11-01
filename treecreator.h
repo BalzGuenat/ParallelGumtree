@@ -12,17 +12,20 @@ private:
   static void createLabels();
   static unsigned label_counter;
   static string labels[100];
-  int rNumber();
-  string rLabel();
+  static int rNumber();
+  static string rLabel();
 
 
   // "Settings"
-  static const bool minHalfFull;
-  static const unsigned maxTypes;
-  static const unsigned maxLabelLength;
-  static const char alphanum[];
+  static const bool minHalfFull = true;
+  static const unsigned maxTypes = 100;
+  static const unsigned maxLabelLength = 50;
+  static const string alphanum;
 
 };
+
+unsigned TreeCreator::label_counter = 99;
+const string TreeCreator::alphanum = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 inline int TreeCreator::rNumber() { return rand() % TreeCreator::maxTypes;}
 inline string TreeCreator::rLabel() {

@@ -23,7 +23,7 @@ public:
   Matcher(Tree* src, Tree* dst, MappingStore* store);
   virtual void match() = 0;
   const MappingStore* get_mappings();
-  set<Mapping>* get_mapping_set();
+  set<Mapping> get_mapping_set();
   const Tree* get_src();
   const Tree* get_dst();
 

@@ -9,8 +9,8 @@ Matcher::~Matcher()
 
 Matcher::Matcher(Tree* src, Tree* dst, MappingStore* store)
 {
-    src = src;
-    dst = dst;
+    this->src = src;
+    this->dst = dst;
     mappings = store;
 }
 
@@ -19,7 +19,7 @@ const MappingStore* Matcher::get_mappings()
     return mappings;
 }
 
-set<Mapping>* Matcher::get_mapping_set()
+set<Mapping> Matcher::get_mapping_set()
 {
     return mappings->asSet();
 }
