@@ -14,6 +14,7 @@ int main(int argc, char* argv[])
   auto t = FileParser::parse(string(argv[1]));
   cout << t->subTreeToString() << endl;
   FileWriter::write(t, "test_tree_out");
+  TreeCreator::pruferTrees(20, "randomPrufer");
   delete t;
   return 0;
 }

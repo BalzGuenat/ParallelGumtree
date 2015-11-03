@@ -2,36 +2,35 @@
 #define TREECREATOR_H
 
 #include <string>
+#include <tree.h>
 using namespace std;
 
 class TreeCreator
 {
 public:
   static void newTrees(unsigned depth, unsigned maxChildren, string filepath);
+  static void pruferTrees(unsigned nodeNumber, string filepath);
 private:
-  static void createLabels();
+  static Tree* seq2Tree(vector<unsigned> sequence, unsigned nodeNumber, Tree* nodes[]);
+  static Tree* modifiedTree(vector<unsigned> sequence, unsigned oldNodeNumber, Tree* oldNodes[]);
   static unsigned label_counter;
   static string labels[100];
   static int rNumber();
-  static string rLabel();
+  static string nextLabel();
 
 
   // "Settings"
-  static const bool minHalfFull = true;
+  static const bool minHalfFull = false;
   static const unsigned maxTypes = 100;
   static const unsigned maxLabelLength = 50;
-  static const string alphanum;
+  static const double varySize; // by how much may the tree size change
+  static const double permNumb; // how many permuations? (ex. 1/4th the number of nodes)
 
 };
 
-unsigned TreeCreator::label_counter = 99;
-const string TreeCreator::alphanum = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
 inline int TreeCreator::rNumber() { return rand() % TreeCreator::maxTypes;}
-inline string TreeCreator::rLabel() {
-  if (TreeCreator::label_counter==99) createLabels();
-  TreeCreator::label_counter++;
-  return TreeCreator::labels[TreeCreator::label_counter];
+inline string TreeCreator::nextLabel() {
+  return "Label " + (std::to_string(label_counter++));
 }
 
 #endif // TREECREATOR_H
