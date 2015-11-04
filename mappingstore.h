@@ -5,8 +5,7 @@
 #include <set>
 #include <utility>
 #include <tree.h>
-
-using Mapping = pair<Tree*, Tree*>;
+#include "mapping.h"
 
 class MappingStore
 {

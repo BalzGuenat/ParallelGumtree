@@ -2,8 +2,7 @@
 #define SUBTREEMATCHER_H
 
 #include "matcher.h"
-
-class MultiMappingStore; // TODO define this class.
+#include "multimappingstore.h"
 
 class SubTreeMatcher : public Matcher
 {
@@ -16,34 +15,38 @@ public:
   SubTreeMatcher(Tree* src, Tree* dst, MappingStore* store);
   ~SubTreeMatcher();
   void match();
-  virtual void filterMappings(MultiMappingStore* mmappings) = 0;
+  virtual void filterMappings(MultiMappingStore& mmappings) = 0;
 
 
 //private:
   class PriorityTreeList
   {
   private:
-    vector<Tree*> trees;
-    int maxHeight;
-    int currentIdx;
-    int idx(Tree* tree);
-    int idx(int height);
-    int height(int idx);
+	 vector<vector<Tree*>*> trees;
+	 unsigned maxHeight;
+	 int currentIdx;
+	 unsigned idx(Tree* tree) const;
+	 unsigned idx(unsigned height) const;
+	 unsigned height(unsigned idx) const;
     void addTree(Tree* tree);
 
   public:
     PriorityTreeList(Tree* tree);
-    vector<Tree*> open();
-    vector<Tree*> pop();
+	 vector<Tree*>* open();
+	 vector<Tree*>* pop();
     void open(Tree* tree);
     int peekHeight();
     void updateHeight();
 
   };
-private:
+
   void popLarger(PriorityTreeList &srcs, PriorityTreeList &dsts);
-  static int MIN_HEIGHT;//TODO
+  static unsigned MIN_HEIGHT;
 
 };
+
+inline unsigned SubTreeMatcher::PriorityTreeList::idx(Tree *tree) const { return idx(tree->height()); }
+inline unsigned SubTreeMatcher::PriorityTreeList::idx(unsigned height) const { return maxHeight - height; }
+inline unsigned SubTreeMatcher::PriorityTreeList::height(unsigned idx) const { return maxHeight - idx; }
 
 #endif // SUBTREEMATCHER_H
