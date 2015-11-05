@@ -49,6 +49,16 @@ bool Tree::isClone(Tree *other) const {
     }
 }
 
+Tree* Tree::clone() {
+    // maybe implement with loop unrolling instead of recursively
+    // queue of pairs of (newParent, oldChild)?
+    Tree* newRoot = new Tree(_type, _label, _lineNumber);
+    for (unsigned i=0; i != _children.size(); i++) {
+        newRoot->children().push_back(_children[i]->clone());
+    }
+    return newRoot;
+}
+
 int Tree::childPosition(const Tree* child) const {
   for (unsigned i = 0; i < _children.size(); ++i) {
       if (_children[i] == child)

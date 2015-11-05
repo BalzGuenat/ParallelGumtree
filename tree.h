@@ -26,6 +26,8 @@ public:
   bool isClone(Tree* other) const;
   int childPosition(const Tree* child) const;
 
+  Tree* clone();
+
   Tree* parent() const;
   vector<Tree*> children() const;
 
