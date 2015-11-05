@@ -5,100 +5,37 @@ MultiMappingStore::MultiMappingStore()
 
 }
 
-MultiMappingStore::~MultiMappingStore()
-{
-
+set<Tree*> MultiMappingStore::getSrc(Tree* dst) const {
+	auto r = _dsts.equal_range(dst);
+	set<Tree*> src;
+	for (auto it = r.first; it != r.second; ++it)
+		src.insert(it->second);
+	return src;
 }
 
-MultiMappingStore::MultiMappingStore(set<Mapping> mappings)
-{
-  for(set<Mapping>::iterator it = mappings.begin(); it != mappings.end(); it++)
-    {
-      MappingStore::link((*it).first, (*it).second);
-    }
+set<Tree*> MultiMappingStore::getDst(Tree* src) const {
+	auto r = _dsts.equal_range(src);
+	set<Tree*> dst;
+	for (auto it = r.first; it != r.second; ++it)
+		dst.insert(it->second);
+	return dst;
 }
 
-unordered_set<Mapping>* MultiMappingStore::getMappings()()
-{
-  unordered_set<Mapping>* mappings;
-  for(unordered_map<Tree* , unordered_set<Tree*>>::iterator it = srcs.begin(); it != srcs.end(); it++)
-    {
-      for(unordered_set<Tree*>::iterator it2 = srcs[*it].begin(); it2 != srcs[*it].end(); it2++)
-        {
-          (*mappings).insert(make_pair(*it, *it2));
-        }
-    }
-  return mappings;
+set<Tree*> MultiMappingStore::getSrcs() const {
+	set<Tree*> srcs;
+	for (auto m : _srcs)
+		srcs.insert(m.first);
+	return srcs;
 }
 
-void MultiMappingStore::link(Tree *src, Tree *dst)
-{
-  if(srcs.find(src) == srcs.end()) srcs.insert(src, unordered_set<Tree*>);
-  MultiMappingStore::srcs.insert(make_pair(src, dst));
-  if(dsts.find(src) == dsts.end()) dsts.insert(dst, unordered_set<Tree*>);
-  MappingStore::dsts.insert(make_pair(dst,src));
+set<Tree*> MultiMappingStore::getDsts() const {
+	set<Tree*> dsts;
+	for (auto m : _dsts)
+		dsts.insert(m.first);
+	return dsts;
 }
 
-void MultiMappingStore::unlink(Tree *src, Tree *dst)
-{
-  MultiMappingStore::srcs[src].erase(dst);
-  MultiMappingStore::dsts[dst].erase(src);
+bool MultiMappingStore::isSrcUnique(Tree *src) const {
+	auto dst = getDst(src);
+	return dst.size() == 1 && getSrc(*dst.begin()).size() == 1;
 }
-
-set<Tree*> MultiMappingStore::get_srcs()
-{
-  unordered_set<Tree*> keys;
-  for(auto kv : srcs) {
-      keys.insert(kv.first);
-  }
-  return keys;
-}
-
-set<Tree*> MultiMappingStore::get_dsts()
-{
-  unordered_set<Tree*> keys;
-  for(auto kv : dsts) {
-      keys.insert(kv.first);
-  }
-  return keys;
-}
-
-set<Tree*> MultiMappingStore::get_dst(Tree *src){
-  return srcs[src];
-}
-
-set<Tree*> MultiMappingStore::get_src(Tree *dst)
-{
-  return dsts[dst];
-}
-
-bool MultiMappingStore::has_src(Tree *src)
-{
-  return srcs.find(src) != srcs.end();
-}
-
-bool MultiMappingStore::has_dst(Tree *dst)
-{
-  return dsts.find(dst) != dsts.end();
-}
-
-bool MultiMappingStore::has(Tree *src, Tree *dst)
-{
-  return srcs[src].find(dst) != srcs[src].end();
-}
-
-bool MultiMappingStore::isSrcUnique(Tree* src)
-{
-  return srcs[src].size() == 1 && dsts[srcs[src].begin()].size() == 1;
-}
-
-unordered_map::iterator MultiMappingStore::get_iterator_begin()
-{
- return getMappings().begin();
-}
-
-unordered_map::iterator MultiMappingStore::get_iterator_end()
-{
- return getMappings().end();
-}
-

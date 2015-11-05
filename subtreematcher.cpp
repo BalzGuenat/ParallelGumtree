@@ -1,5 +1,7 @@
 #include "subtreematcher.h"
 
+unsigned SubTreeMatcher::MIN_HEIGHT = 2;
+
 SubTreeMatcher::SubTreeMatcher(Tree* src, Tree* dst, MappingStore* store)
   : Matcher(src, dst, store) {}
 
@@ -22,16 +24,16 @@ void SubTreeMatcher::match()
             while (srcs.peekHeight() != dsts.peekHeight())
                 popLarger(srcs, dsts);
 
-            vector<Tree*> hSrcs = srcs.pop();
-            vector<Tree*> hDsts = dsts.pop();
+				auto hSrcs = srcs.pop();
+				auto hDsts = dsts.pop();
 
-            vector<bool> srcMarks(hSrcs.size());
-            vector<bool> dstMarks(hDsts.size());
+				vector<bool> srcMarks(hSrcs->size());
+				vector<bool> dstMarks(hDsts->size());
 
-            for (unsigned i = 0; i < hSrcs.size(); i++) {
-                for (unsigned j = 0; j < hDsts.size(); j++) {
-                    Tree* src = hSrcs[i];
-                    Tree* dst = hDsts[j];
+				for (unsigned i = 0; i < hSrcs->size(); i++) {
+					 for (unsigned j = 0; j < hDsts->size(); j++) {
+						  Tree* src = hSrcs->at(i);
+						  Tree* dst = hDsts->at(j);
 
                     if (src->isClone(dst)) {
                         multiMappings.link(src, dst);
@@ -43,10 +45,10 @@ void SubTreeMatcher::match()
 
             for (unsigned i = 0; i < srcMarks.size(); i++)
                 if (srcMarks[i] == false)
-                    srcs.open(hSrcs[i]);
+						  srcs.open(hSrcs->at(i));
             for (unsigned j = 0; j < dstMarks.size(); j++)
                 if (dstMarks[j] == false)
-                    dsts.open(hDsts[j]);
+						  dsts.open(hDsts->at(j));
             srcs.updateHeight();
             dsts.updateHeight();
         }
@@ -79,4 +81,69 @@ SubTreeMatcher::~SubTreeMatcher()
 {
 
 }
+
+
+int SubTreeMatcher::PriorityTreeList::peekHeight() {
+	return (currentIdx == -1) ? -1 : height(currentIdx);
+}
+
+void SubTreeMatcher::PriorityTreeList::open(Tree *tree) {
+	for (auto child : tree->children())
+		addTree(child);
+}
+
+void SubTreeMatcher::PriorityTreeList::updateHeight() {
+	currentIdx = -1;
+	for (unsigned i = 0; i < trees.size(); i++) {
+		 if (trees[i]) {
+			  currentIdx = i;
+			  break;
+		 }
+	}
+}
+
+vector<Tree*>* SubTreeMatcher::PriorityTreeList::pop() {
+	if (currentIdx == -1)
+		return nullptr;
+	else {
+		auto pop = trees[currentIdx];
+		trees[currentIdx] = nullptr;
+		return pop;
+	}
+}
+
+void SubTreeMatcher::PriorityTreeList::addTree(Tree *tree) {
+	if (tree->height() >= MIN_HEIGHT) {
+		int i = idx(tree);
+		if (!trees.at(i))
+			trees.at(i) = new vector<Tree*>;
+		trees.at(i)->push_back(tree);
+	}
+}
+
+vector<Tree*>* SubTreeMatcher::PriorityTreeList::open() {
+	auto popped = pop();
+	if (popped) {
+		for (auto tree : *popped)
+			open(tree);
+		updateHeight();
+		return popped;
+	} else
+		return nullptr;
+}
+
+SubTreeMatcher::PriorityTreeList::PriorityTreeList(Tree *tree) {
+	int listSize = tree->height() - MIN_HEIGHT + 1;
+	if (listSize < 0)
+		listSize = 0;
+	if (listSize == 0)
+		currentIdx = -1;
+	for (int i = 0; i < listSize; ++i)
+		trees[i] = nullptr;
+	maxHeight = tree->height();
+	addTree(tree);
+}
+
+
+
 

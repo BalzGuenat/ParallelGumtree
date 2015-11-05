@@ -43,8 +43,8 @@ void Matcher::add_mapping(Tree* src, Tree* dst)
 
 void Matcher::add_full_mapping(Tree* src, Tree* dst)
 {
-   vector<Tree*> csrcs = src->get_trees();
-   vector<Tree*> cdsts = dst->get_trees();
+	auto csrcs = src->get_trees();
+	auto cdsts = dst->get_trees();
    for(unsigned int i = 0; i < csrcs.size(); i++)
      {
        add_mapping(csrcs[i], cdsts[i]);
