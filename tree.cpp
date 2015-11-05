@@ -67,7 +67,7 @@ Tree* Tree::clone() {
     // queue of pairs of (newParent, oldChild)?
     Tree* newRoot = new Tree(_type, _label, _lineNumber);
     for (unsigned i=0; i != _children.size(); i++) {
-        newRoot->children().push_back(_children[i]->clone());
+        newRoot->_children.push_back(_children[i]->clone());
     }
     return newRoot;
 }

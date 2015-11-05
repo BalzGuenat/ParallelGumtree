@@ -99,7 +99,7 @@ Tree* TreeCreator::seq2Tree(unsigned nodeNumber){
 
 void TreeCreator::pruferTrees(unsigned nodeNumber, string filepath) {
   srand (time(NULL));
-  unsigned initNodeNumber = nodeNumber/20;
+  unsigned initNodeNumber = nodeNumber/5;
   initNodeNumber = initNodeNumber > 2 ? initNodeNumber : 3;
   Tree* root1 = seq2Tree(initNodeNumber);
   Tree* root2 = modifyTreeRandom(initNodeNumber, nodeNumber, root1);
@@ -125,10 +125,10 @@ Tree* TreeCreator::modifyTreeRandom(unsigned initNodeNumber, unsigned targetNode
     vector<Tree*> nodes1;
     addNodes(root1, nodes1);
 
-    int added1 = 0; // how many nodes have we added
-    int added2 = 0;
+    unsigned added1 = 0; // how many nodes have we added
+    unsigned added2 = 0;
     // both trees have more than targetNodeNumber/2 nodes and 1 has more than targetNodeNumber
-    while ((added1+initNodeNumber > targetNodeNumber || added2+initNodeNumber > targetNodeNumber) && (added1+initNodeNumber > targetNodeNumber/2 && added2+initNodeNumber > targetNodeNumber/2)) {
+    while ((added1+initNodeNumber < targetNodeNumber && added2+initNodeNumber < targetNodeNumber) || (added1+initNodeNumber < targetNodeNumber/2 || added2+initNodeNumber < targetNodeNumber/2)) {
         unsigned n = rand() % initNodeNumber; // which node
         unsigned changeSize = initNodeNumber/2 + (rand() % initNodeNumber);
         Tree* nT;
@@ -139,11 +139,13 @@ Tree* TreeCreator::modifyTreeRandom(unsigned initNodeNumber, unsigned targetNode
                 nT = seq2Tree(changeSize);
                 if (rand() % 2 == 0) {
                     nodes1[n]->_children.push_back(nT);
+                    nT->_parent = nodes1[n];
                     added1+=changeSize;
                     addNodes(nT, nodes1);
                 }
                 else {
-                    nodes2[n]->_children.push_back(seq2Tree(changeSize));
+                    nodes2[n]->_children.push_back(nT);
+                    nT->_parent = nodes2[n];
                     added2+=changeSize;
                     addNodes(nT, nodes2);
                 }
@@ -154,9 +156,13 @@ Tree* TreeCreator::modifyTreeRandom(unsigned initNodeNumber, unsigned targetNode
                 nodes1[n]->_children.push_back(nT);
                 added1+=changeSize;
                 addNodes(nT, nodes1);
+                nT->_parent = nodes1[n];
+
+                nT = nT->clone();
                 nodes2[n]->_children.push_back(seq2Tree(changeSize));
                 added2+=changeSize;
                 addNodes(nT, nodes2);
+                nT->_parent = nodes2[n];
                 break;
         }
             case 2: {// swap
@@ -168,18 +174,26 @@ Tree* TreeCreator::modifyTreeRandom(unsigned initNodeNumber, unsigned targetNode
                 // add nT
                 nodes1[n]->_children.push_back(nT);
                 added1+=changeSize;
-                addNodes(nT, nodes2);
+                addNodes(nT, nodes1);
+                nT->_parent = nodes1[n];
+
+                nT = nT->clone();
                 nodes2[n2]->_children.push_back(nT);
                 added2+=changeSize;
                 addNodes(nT, nodes2);
+                nT->_parent = nodes2[n2];
 
                 //add nT2
                 nodes1[n2]->_children.push_back(nT2);
                 added1+=changeSize2;
-                addNodes(nT2, nodes2);
+                addNodes(nT2, nodes1);
+                nT2->_parent = nodes1[n2];
+
+                nT2 = nT2->clone();
                 nodes2[n]->_children.push_back(nT2);
                 added2+=changeSize2;
-                addNodes(nT2, nodes1);
+                addNodes(nT2, nodes2);
+                nT2->_parent = nodes2[n2];
                 break;
         }
             case 3: {// copy (add to 1 twice)
@@ -187,55 +201,62 @@ Tree* TreeCreator::modifyTreeRandom(unsigned initNodeNumber, unsigned targetNode
                 nodes1[n]->_children.push_back(nT);
                 added1+=changeSize;
                 addNodes(nT, nodes1);
-                nodes2[n]->_children.push_back(seq2Tree(changeSize));
+                nT->_parent = nodes1[n];
+
+                nT = nT->clone();
+                nodes2[n]->_children.push_back(nT);
                 added2+=changeSize;
                 addNodes(nT, nodes2);
+                nT->_parent = nodes2[n];
+
                 n2 = rand() % initNodeNumber;
+                nT = nT->clone();
                 if (rand() % 2 == 0) {
                     nodes1[n2]->_children.push_back(nT);
                     added1+=changeSize;
                     addNodes(nT, nodes1);
+                    nT->_parent = nodes1[n2];
                 }
                 else {
                     nodes2[n2]->_children.push_back(seq2Tree(changeSize));
                     added2+=changeSize;
                     addNodes(nT, nodes2);
+                    nT->_parent = nodes2[n2];
                 }
                 break;
         }
         }
-
-        // change label names
-        unsigned edit1 = rand() % (nodes1.size()/2);
-        unsigned edit2 = rand() % (nodes2.size()/2);
-        unsigned max = nodes1.size() > nodes2.size() ? nodes1.size() : nodes2.size();
-        max = max + max/2;
-        for (unsigned i = 0; i < edit1; i++) {
-            unsigned n = rand() % nodes1.size();
-            nodes1[n] = new Tree(nodes1[n]->type(), "Label " + (std::to_string(rand() % max)), 0);
-        }
-        for (unsigned i = 0; i < edit2; i++) {
-            unsigned n = rand() % nodes2.size();
-            nodes2[n] = new Tree(nodes2[n]->type(), "Label " + (std::to_string(rand() % max)), 0);
-        }
-
-        // change type numbers
-        edit1 = rand() % (nodes1.size()/2);
-        edit2 = rand() % (nodes2.size()/2);
-        for (unsigned i = 0; i < edit1; i++) {
-            unsigned n = rand() % nodes1.size();
-            nodes1[n] = new Tree(rNumber(), nodes1[n]->label(), 0);
-        }
-        for (unsigned i = 0; i < edit2; i++) {
-            unsigned n = rand() % nodes2.size();
-            nodes2[n] = new Tree(rNumber(), nodes2[n]->label(), 0);
-        }
-
     }
+    // change label names
+    unsigned edit1 = rand() % (nodes1.size()/2);
+    unsigned edit2 = rand() % (nodes2.size()/2);
+    unsigned max = nodes1.size() > nodes2.size() ? nodes1.size() : nodes2.size();
+    max = max + max/2;
+    for (unsigned i = 0; i < edit1; i++) {
+        unsigned n = rand() % nodes1.size();
+        nodes1[n] = new Tree(nodes1[n]->type(), "Label " + (std::to_string(rand() % max)), 0);
+    }
+    for (unsigned i = 0; i < edit2; i++) {
+        unsigned n = rand() % nodes2.size();
+        nodes2[n] = new Tree(nodes2[n]->type(), "Label " + (std::to_string(rand() % max)), 0);
+    }
+
+    // change type numbers
+    edit1 = rand() % (nodes1.size()/2);
+    edit2 = rand() % (nodes2.size()/2);
+    for (unsigned i = 0; i < edit1; i++) {
+        unsigned n = rand() % nodes1.size();
+        nodes1[n] = new Tree(rNumber(), nodes1[n]->label(), 0);
+    }
+    for (unsigned i = 0; i < edit2; i++) {
+        unsigned n = rand() % nodes2.size();
+        nodes2[n] = new Tree(rNumber(), nodes2[n]->label(), 0);
+    }
+
     return root2;
 }
 
-void TreeCreator::addNodes(Tree* root, vector<Tree*> nodes) {
+void TreeCreator::addNodes(Tree* root, vector<Tree*> &nodes) {
     stack<Tree*> listForChildren;
     listForChildren.push(root);
     while (!listForChildren.empty()) {
