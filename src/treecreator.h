@@ -2,7 +2,7 @@
 #define TREECREATOR_H
 
 #include <string>
-#include <tree.h>
+#include "tree.h"
 using namespace std;
 
 class TreeCreator

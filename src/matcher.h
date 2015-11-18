@@ -1,7 +1,7 @@
 #ifndef MATCHER_H
 #define MATCHER_H
 
-#include <mappingstore.h>
+#include "mappingstore.h"
 
 class Matcher
 {

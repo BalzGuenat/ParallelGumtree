@@ -4,38 +4,38 @@ CONFIG -= app_bundle
 CONFIG -= qt
 CONFIG += c++11
 
-SOURCES += main.cpp \
-    tree.cpp \
-    fileparser.cpp \
-    matcher.cpp \
-    filewriter.cpp \
-    matchingdumper.cpp \
-    treecreator.cpp \
-    mappingstore.cpp \
-    subtreematcher.cpp \
-    greedysubtreematcher.cpp \
-    multimappingstore.cpp \
-    greedybottomupmatcher.cpp \
-    treemap.cpp
+SOURCES += src/main.cpp \
+    src/tree.cpp \
+    src/fileparser.cpp \
+    src/matcher.cpp \
+    src/filewriter.cpp \
+    src/matchingdumper.cpp \
+    src/treecreator.cpp \
+    src/mappingstore.cpp \
+    src/subtreematcher.cpp \
+    src/greedysubtreematcher.cpp \
+    src/multimappingstore.cpp \
+    src/greedybottomupmatcher.cpp \
+    src/treemap.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
 
 HEADERS += \
-    tree.h \
-    fileparser.h \
-    matcher.h \
-    filewriter.h \
-    matchingdumper.h \
-    treecreator.h \
-    mappingstore.h \
-    subtreematcher.h \
-    greedysubtreematcher.h \
-    multimappingstore.h \
-    greedybottomupmatcher.h \
-    mapping.h \
-    treemap.h
+    src/tree.h \
+    src/matcher.h \
+    src/filewriter.h \
+    src/matchingdumper.h \
+    src/treecreator.h \
+    src/mappingstore.h \
+    src/subtreematcher.h \
+    src/greedysubtreematcher.h \
+    src/multimappingstore.h \
+    src/greedybottomupmatcher.h \
+    src/mapping.h \
+    src/treemap.h \
+    src/fileparser.h
 
 DISTFILES += \
-    test_tree
+
 

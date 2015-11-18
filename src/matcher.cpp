@@ -1,5 +1,5 @@
 #include "matcher.h"
-#include <mappingstore.h>
+#include "mappingstore.h"
 #include <algorithm>    // std::max
 
 Matcher::~Matcher()

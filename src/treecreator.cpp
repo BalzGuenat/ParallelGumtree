@@ -1,9 +1,8 @@
 #include "treecreator.h"
-#include <tree.h>
-#include <filewriter.h>
+#include "tree.h"
+#include "filewriter.h"
 #include <vector>
 #include <time.h> // time
-#include <stdlib.h> // srand, rand
 #include <stdio.h>
 #include <algorithm>
 #include <iostream>

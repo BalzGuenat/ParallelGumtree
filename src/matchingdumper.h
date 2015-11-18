@@ -3,7 +3,7 @@
 
 #include <string>
 #include "matcher.h"
-#include <mappingstore.h>
+#include "mappingstore.h"
 
 class MatchingDumper
 {

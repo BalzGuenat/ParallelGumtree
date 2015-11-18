@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/sh
 
 java -cp ./gumtree.jar com.github.gumtreediff.client.Run \
 	-c Clients.experimental true \
