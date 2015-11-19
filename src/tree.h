@@ -26,6 +26,7 @@ public:
 		  class PostOrderIterator : public iterator<input_iterator_tag, Tree*> {
 			  private:
 				  void push(Tree* tree);
+				  Tree* _root;
 				  stack<pair<Tree*, vector<Tree*>::const_iterator>> _stack;
 			  public:
 				  PostOrderIterator(Tree* tree);

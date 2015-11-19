@@ -115,12 +115,13 @@ bool Tree::PostOrderStruct::PostOrderIterator::operator!=(const PostOrderIterato
 
 Tree* Tree::PostOrderStruct::PostOrderIterator::operator*() const {
 	if (_stack.empty())
-		return nullptr;
+		return _root;
 	auto topIt = _stack.top().second;
 	return *topIt;
 }
 
-Tree::PostOrderStruct::PostOrderIterator::PostOrderIterator(Tree *tree) {
+Tree::PostOrderStruct::PostOrderIterator::PostOrderIterator(Tree *tree)
+	: _root(tree) {
 	if (tree)
 		push(tree);
 }
@@ -136,14 +137,18 @@ void Tree::PostOrderStruct::PostOrderIterator::push(Tree *tree) {
 
 Tree::PostOrderStruct::PostOrderIterator&
 Tree::PostOrderStruct::PostOrderIterator::operator ++() {
-	if (_stack.empty())
-		throw -1;
-
-	auto it = ++_stack.top().second;
-	if (it == _stack.top().first->children().end())
-		_stack.pop();
-	else
-		push(*it);
+	if (_stack.empty()) {
+		if (_root)
+			_root = nullptr;
+		else
+			throw -1;
+	} else {
+		auto it = ++_stack.top().second;
+		if (it == _stack.top().first->children().end())
+			_stack.pop();
+		else
+			push(*it);
+	}
 
 	return *this;
 }
