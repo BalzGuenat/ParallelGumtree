@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <stack>
 
 using namespace std;
 
@@ -16,6 +17,27 @@ class Tree
 public:
   Tree(int type, string label, int lineNumber);
   ~Tree();
+
+  struct PostOrderStruct {
+	  private:
+		  Tree* _root;
+	  public:
+		  PostOrderStruct(Tree* root);
+		  class PostOrderIterator : public iterator<input_iterator_tag, Tree*> {
+			  private:
+				  void push(Tree* tree);
+				  stack<pair<Tree*, vector<Tree*>::const_iterator>> _stack;
+			  public:
+				  PostOrderIterator(Tree* tree);
+				  PostOrderIterator& operator++();
+				  bool operator==(const PostOrderIterator& other);
+				  bool operator!=(const PostOrderIterator& other);
+				  Tree* operator*() const;
+		  };
+		  static PostOrderIterator END;
+		  PostOrderIterator begin();
+		  PostOrderIterator end();
+  };
 
   int type() const;
   int lineNumber() const;
@@ -34,15 +56,17 @@ public:
   Tree* clone();
 
   Tree* parent() const;
-  vector<Tree*> children() const;
+  const vector<Tree*>& children() const;
 
-  //To be implemented ?
   vector<Tree*> get_trees();
+  PostOrderStruct postOrder();
   void set_matched(bool isMatched = true);
 
   string toString() const;
   string subTreeToString() const;
+
 private:
+
   vector<string> subTreeToStringVector() const;
   void get_trees(Tree* tree, vector<Tree*>& trees);
   const int _type;
@@ -60,8 +84,8 @@ inline int Tree::lineNumber() const { return _lineNumber; }
 inline string Tree::label() const { return _label; }
 inline bool Tree::isRoot() const { return !_parent; }
 inline Tree* Tree::parent() const { return _parent; }
-inline vector<Tree*> Tree::children() const {
-  return vector<Tree*>(_children);
+inline const vector<Tree*>& Tree::children() const {
+  return _children;
 }
 inline bool Tree::isLeaf() const { return _children.empty(); }
 inline bool Tree::isMatched() const { return _isMatched; }
@@ -69,5 +93,6 @@ inline void Tree::set_matched(bool isMatched) { _isMatched = isMatched; }
 inline int Tree::id() const { return _id; }
 inline void Tree::set_id(int id) { _id = id; }
 inline unsigned Tree::height() const { return _height; }
+inline Tree::PostOrderStruct Tree::postOrder() { return PostOrderStruct(this); }
 
 #endif // TREE_H

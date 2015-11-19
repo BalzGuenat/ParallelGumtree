@@ -1,7 +1,7 @@
 #include <iostream>
 #include "tree.h"
 #include "fileparser.h"
-#include "matcher.h"
+#include "classicgumtree.h"
 #include "filewriter.h"
 #include "treecreator.h"
 #include "mappingstore.h"
@@ -42,6 +42,9 @@ int main(int argc, char* argv[])
 		auto t = FileParser::parse(file0);
 		cout << t->subTreeToString() << endl;
 		FileWriter::write(t, file0 + ".replica");
+		cout << "PostOrder:" << endl;
+		for (auto tt : t->postOrder())
+			cout << tt->toString() << endl;
 		delete t; t = nullptr;
 		return 0;
 
@@ -52,8 +55,9 @@ int main(int argc, char* argv[])
 		auto t0 = FileParser::parse(file0);
 		auto t1 = FileParser::parse(file1);
 		// TODO match trees.
-		MappingStore mapping; // dummy
-		mapping.link(t0, t1); //also dummy
+		MappingStore mapping;
+		ClassicGumtree matcher(t0, t1, &mapping);
+		matcher.match();
 		for (auto m : mapping.asSet())
 			cout << m.first->lineNumber() << " -> " << m.second->lineNumber() << endl;
 		delete t0; t0 = nullptr;

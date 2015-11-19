@@ -72,7 +72,7 @@ int Matcher::numberOfCommonDescendants(Tree* src, Tree* dst)
 {
     vector<Tree*> kids = dst->children();
     int common = 0;
-    for(vector<Tree*>::iterator it = src->children().begin(); it != src->children().end(); it++)
+	 for(auto it = src->children().begin(); it != src->children().end(); it++)
       {
         Tree* m = mappings->get_dst(*it);
         if(m != NULL && (std::find(kids.begin(), kids.end(), m) != kids.end()))
@@ -86,21 +86,22 @@ int Matcher::numberOfCommonDescendants(Tree* src, Tree* dst)
 
 void Matcher::clean()
 {
+	auto srcTrees = src->get_trees();
+	for(vector<Tree*>::const_iterator it = srcTrees.begin(); it != srcTrees.end(); it++)
+	{
+		if(!mappings->has_src(*it))
+		{
+			(*it)->set_matched(false);
+		}
+	}
 
-  for(vector<Tree*>::const_iterator it = src->get_trees().begin(); it != src->get_trees().end(); it++)
-      {
-        if(!mappings->has_src(*it))
-          {
-            (*it)->set_matched(false);
-          }
-      }
-
-    for(vector<Tree*>::iterator it = dst->get_trees().begin(); it != dst->get_trees().end(); it++)
-      {
-        if(!mappings->has_dst(*it))
-          {
-            (*it)->set_matched(false);
-          }
-      }
+	auto dstTrees = dst->get_trees();
+	for(vector<Tree*>::iterator it = dstTrees.begin(); it != dstTrees.end(); it++)
+	{
+		if(!mappings->has_dst(*it))
+		{
+			(*it)->set_matched(false);
+		}
+	}
 
 }

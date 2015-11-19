@@ -16,7 +16,8 @@ SOURCES += src/main.cpp \
     src/greedysubtreematcher.cpp \
     src/multimappingstore.cpp \
     src/greedybottomupmatcher.cpp \
-    src/treemap.cpp
+    src/treemap.cpp \
+    src/classicgumtree.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
@@ -34,7 +35,8 @@ HEADERS += \
     src/greedybottomupmatcher.h \
     src/mapping.h \
     src/treemap.h \
-    src/fileparser.h
+    src/fileparser.h \
+    src/classicgumtree.h
 
 DISTFILES += \
 

@@ -88,3 +88,62 @@ unsigned Tree::size() const {
     }
   return size;
 }
+
+Tree::PostOrderStruct::PostOrderStruct(Tree *root)
+	: _root(root) {}
+
+Tree::PostOrderStruct::PostOrderIterator Tree::PostOrderStruct::begin() {
+	return PostOrderIterator(_root);
+}
+
+Tree::PostOrderStruct::PostOrderIterator Tree::PostOrderStruct::END =
+		Tree::PostOrderStruct::PostOrderIterator(nullptr);
+
+Tree::PostOrderStruct::PostOrderIterator Tree::PostOrderStruct::end() {
+	return PostOrderStruct::END;
+}
+
+bool Tree::PostOrderStruct::PostOrderIterator::operator==(const PostOrderIterator& other) {
+	Tree* myPtr = **this;
+	Tree* otherPtr = *other;
+	return myPtr == otherPtr;
+}
+
+bool Tree::PostOrderStruct::PostOrderIterator::operator!=(const PostOrderIterator& other) {
+	return !(*this == other);
+}
+
+Tree* Tree::PostOrderStruct::PostOrderIterator::operator*() const {
+	if (_stack.empty())
+		return nullptr;
+	auto topIt = _stack.top().second;
+	return *topIt;
+}
+
+Tree::PostOrderStruct::PostOrderIterator::PostOrderIterator(Tree *tree) {
+	if (tree)
+		push(tree);
+}
+
+void Tree::PostOrderStruct::PostOrderIterator::push(Tree *tree) {
+	auto t = tree;
+	while (!t->isLeaf()) {
+		auto it = t->children().begin();
+		_stack.push(make_pair(t, it));
+		t = *it;
+	}
+}
+
+Tree::PostOrderStruct::PostOrderIterator&
+Tree::PostOrderStruct::PostOrderIterator::operator ++() {
+	if (_stack.empty())
+		throw -1;
+
+	auto it = ++_stack.top().second;
+	if (it == _stack.top().first->children().end())
+		_stack.pop();
+	else
+		push(*it);
+
+	return *this;
+}

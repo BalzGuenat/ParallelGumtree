@@ -28,6 +28,7 @@ Tree* FileParser::parse(string filepath) {
   while (parents.size() > 1)
     parents.pop();
   file.close();
+
   return parents.empty() ? nullptr : parents.top();
 }
 
@@ -49,6 +50,7 @@ vector<string> split(string s, char c) {
 Tree* FileParser::parseLine(Tree* parent, string line, int lineNumber) {
   auto fields = split(line, ':');
   Tree* tree = new Tree(stoi(fields[0]), fields[1], lineNumber);
+  tree->set_id(lineNumber);
   tree->_parent = parent;
   if (parent)
     parent->_children.push_back(tree);
