@@ -29,7 +29,7 @@ MappingStore MappingStore::copy()
 void MappingStore::link(Tree *src, Tree *dst)
 {
   MappingStore::srcs.insert(make_pair(src, dst));
-  MappingStore::dsts.insert(make_pair(dst,src));
+  MappingStore::dsts.insert(make_pair(dst, src));
 }
 
 void MappingStore::unlink(Tree *src, Tree *dst)
@@ -69,12 +69,20 @@ Tree* MappingStore::first_mapped_dst_parent(Tree *dst)
 }
 
 Tree* MappingStore::get_dst(Tree *src){
-  return srcs.at(src);
+	try {
+		return srcs.at(src);
+	} catch (out_of_range) {
+		return nullptr;
+	}
 }
 
 Tree* MappingStore::get_src(Tree *dst)
 {
-  return dsts.at(dst);
+	try {
+		return dsts.at(dst);
+	} catch (out_of_range) {
+		return nullptr;
+	}
 }
 
 bool MappingStore::has_src(Tree *src)

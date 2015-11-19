@@ -21,13 +21,28 @@ Tree* FileParser::parse(string filepath) {
         parents.pop();
 
       auto parent = parents.empty() ? nullptr : parents.top();
-      auto tree = parseLine(parent, line, ++lineNumber);
-      // TODO check that top() on empty stack return nullptr.
+		auto tree = parseLine(parent, line, ++lineNumber);
+		tree->set_depth(depth);
       parents.push(tree);
     }
   while (parents.size() > 1)
     parents.pop();
   file.close();
+
+  // post order numbering and height
+  int id = 0;
+  for (auto t : parents.top()->postOrder()) {
+	  t->set_id(id++);
+	  unsigned height = 0;
+	  if (!t->isLeaf()) {
+		  for (auto c : t->children()) {
+			  if (c->height() > height)
+				  height = c->height();
+		  }
+		  ++height;
+	  }
+	  t->set_height(height);
+  }
 
   return parents.empty() ? nullptr : parents.top();
 }

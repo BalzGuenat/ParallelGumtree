@@ -138,8 +138,7 @@ SubTreeMatcher::PriorityTreeList::PriorityTreeList(Tree *tree) {
 		listSize = 0;
 	if (listSize == 0)
 		currentIdx = -1;
-	for (int i = 0; i < listSize; ++i)
-		trees[i] = nullptr;
+	trees = vector<vector<Tree*>*>(listSize);
 	maxHeight = tree->height();
 	addTree(tree);
 }

@@ -10,7 +10,7 @@ void GreedyBottomUpMatcher::match() {
 	_srcIds = TreeMap(src);
 	_dstIds = TreeMap(dst);
 
-	for (Tree* t : src->get_trees()) {
+	for (Tree* t : src->postOrder()) {
 		if (t->isRoot()) {
 			add_mapping(t, dst);
 			lastChanceMatch(t, dst);

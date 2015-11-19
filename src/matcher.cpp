@@ -36,8 +36,8 @@ const Tree* Matcher::get_dst()
 
 void Matcher::add_mapping(Tree* src, Tree* dst)
 {
-    //src.setMatched(true);
-    //dst.setMatched(true);
+	 src->set_matched();
+	 dst->set_matched();
     mappings->link(src, dst);
 }
 

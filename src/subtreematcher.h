@@ -24,7 +24,7 @@ public:
   private:
 	 vector<vector<Tree*>*> trees;
 	 unsigned maxHeight;
-	 int currentIdx;
+	 int currentIdx = 0;
 	 unsigned idx(Tree* tree) const;
 	 unsigned idx(unsigned height) const;
 	 unsigned height(unsigned idx) const;
