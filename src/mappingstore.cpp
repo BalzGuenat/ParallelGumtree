@@ -114,12 +114,12 @@ bool MappingStore::has(Tree *src, Tree *dst)
   }
 }
 
-unordered_map<Tree*, Tree*>::iterator MappingStore::get_iterator_begin()
+unordered_map<Tree*, Tree*>::iterator MappingStore::begin()
 {
  return srcs.begin();
 }
 
-unordered_map<Tree*, Tree*>::iterator MappingStore::get_iterator_end()
+unordered_map<Tree*, Tree*>::iterator MappingStore::end()
 {
  return srcs.end();
 }

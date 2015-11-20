@@ -17,8 +17,8 @@ void SubTreeMatcher::match()
 {
         MultiMappingStore multiMappings;
 
-        PriorityTreeList srcs(src);
-        PriorityTreeList dsts(dst);
+		  PriorityTreeList srcs(_src);
+		  PriorityTreeList dsts(_dst);
 
         while (srcs.peekHeight() != -1 && dsts.peekHeight() != -1) {
             while (srcs.peekHeight() != dsts.peekHeight())
@@ -70,18 +70,6 @@ double SubTreeMatcher::sim(Tree* src, Tree* dst)
   //double po = 1.0 - ((double) abs(src->id() - dst.getId()) / (double) this.getMaxTreeSize());
   return 100 * jaccard + 10 * pos/* + po*/;
 }
-
-int SubTreeMatcher::getMaxTreeSize()
-{
-  return max(src->size(), dst->size());
-}
-
-
-SubTreeMatcher::~SubTreeMatcher()
-{
-
-}
-
 
 int SubTreeMatcher::PriorityTreeList::peekHeight() {
 	return (currentIdx == -1) ? -1 : height(currentIdx);

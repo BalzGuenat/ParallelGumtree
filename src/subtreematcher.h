@@ -13,7 +13,6 @@ protected:
 
 public:
   SubTreeMatcher(Tree* src, Tree* dst, MappingStore* store);
-  ~SubTreeMatcher();
   void match();
   virtual void filterMappings(MultiMappingStore& mmappings) = 0;
 
@@ -48,5 +47,6 @@ public:
 inline unsigned SubTreeMatcher::PriorityTreeList::idx(Tree *tree) const { return idx(tree->height()); }
 inline unsigned SubTreeMatcher::PriorityTreeList::idx(unsigned height) const { return maxHeight - height; }
 inline unsigned SubTreeMatcher::PriorityTreeList::height(unsigned idx) const { return maxHeight - idx; }
+inline int SubTreeMatcher::getMaxTreeSize() { return max(_src->size(), _dst->size()); }
 
 #endif // SUBTREEMATCHER_H

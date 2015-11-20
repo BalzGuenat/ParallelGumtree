@@ -7,13 +7,13 @@
 const double GreedyBottomUpMatcher::SIM_THRESHOLD = 0.5;
 
 void GreedyBottomUpMatcher::match() {
-	_srcIds = TreeMap(src);
-	_dstIds = TreeMap(dst);
+	_srcIds = TreeMap(_src);
+	_dstIds = TreeMap(_dst);
 
-	for (Tree* t : src->postOrder()) {
+	for (Tree* t : _src->postOrder()) {
 		if (t->isRoot()) {
-			add_mapping(t, dst);
-			lastChanceMatch(t, dst);
+			add_mapping(t, _dst);
+			lastChanceMatch(t, _dst);
 			break;
 		} else if (!(t->isMatched() || t->isLeaf())) {
 			auto candidates = getDstCandidates(t);
@@ -40,7 +40,7 @@ void GreedyBottomUpMatcher::match() {
 vector<Tree*> GreedyBottomUpMatcher::getDstCandidates(Tree* src) {
 	vector<Tree*> seeds;
 	for (auto c : src->children()) {
-		auto m = mappings->get_dst(c);
+		auto m = _mappings->get_dst(c);
 		if (m)
 			seeds.push_back(m);
 	}

@@ -61,6 +61,7 @@ public:
 
   Tree* parent() const;
   const vector<Tree*>& children() const;
+  vector<Tree*> descendants();
 
   vector<Tree*> get_trees();
   PostOrderStruct postOrder();

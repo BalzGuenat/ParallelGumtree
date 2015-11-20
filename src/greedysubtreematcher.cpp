@@ -4,12 +4,6 @@
 
 #include "greedysubtreematcher.h"
 
-
-GreedySubTreeMatcher::~GreedySubTreeMatcher()
-{
-
-}
-
 struct GreedySubTreeMatcher::Comparator {
 
 	MappingStore* mappings;
@@ -98,7 +92,7 @@ void GreedySubTreeMatcher::filterMappings(MultiMappingStore& multiMappings) {
         unordered_set<Tree*> srcIgnored;
         unordered_set<Tree*> dstIgnored;
 		  sort(ambiguousList.begin(), ambiguousList.end(),
-				 Comparator(ambiguousList, mappings, max(src->size(), dst->size())));
+				 Comparator(ambiguousList, _mappings, max(_src->size(), _dst->size())));
 
         // Select the best ambiguous mappings
         while (ambiguousList.size() > 0) {

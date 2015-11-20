@@ -7,9 +7,9 @@ class Matcher
 {
 
 protected:
-  Tree* src;
-  Tree* dst;
-  MappingStore* mappings;
+  Tree* _src;
+  Tree* _dst;
+  MappingStore* _mappings;
 
   void add_mapping(Tree* src, Tree* dst);
   void add_full_mapping(Tree* src, Tree* dst);
@@ -26,8 +26,11 @@ public:
   set<Mapping> get_mapping_set();
   const Tree* get_src();
   const Tree* get_dst();
-
-  ~Matcher();
 };
+
+inline const MappingStore* Matcher::get_mappings() { return _mappings; }
+inline set<Mapping> Matcher::get_mapping_set() { return _mappings->asSet(); }
+inline const Tree* Matcher::get_src() { return _src; }
+inline const Tree* Matcher::get_dst() { return _dst; }
 
 #endif // MATCHER_H

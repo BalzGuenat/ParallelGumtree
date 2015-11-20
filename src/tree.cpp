@@ -26,6 +26,13 @@ vector<Tree*> Tree::get_trees() {
 	return trees;
 }
 
+vector<Tree*> Tree::descendants() {
+	vector<Tree*> descs;
+	for (auto c : _children)
+		get_trees(c, descs);
+	return descs;
+}
+
 string Tree::subTreeToString() const {
   auto strings = subTreeToStringVector();
   string subTreeString;

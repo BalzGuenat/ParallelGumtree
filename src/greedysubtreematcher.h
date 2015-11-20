@@ -9,7 +9,6 @@ public:
 
 GreedySubTreeMatcher(Tree* src, Tree* dst, MappingStore* store);
 void filterMappings(MultiMappingStore& multiMappings);
-~GreedySubTreeMatcher();
 
 private:
   struct Comparator;

@@ -26,7 +26,7 @@ public:
     bool has_src(Tree* src);
     bool has_dst(Tree* dst);
     bool has(Tree* src, Tree* dst);
-    unordered_map<Tree*, Tree*>::iterator get_iterator_begin();
-    unordered_map<Tree*, Tree*>::iterator get_iterator_end();
+	 unordered_map<Tree*, Tree*>::iterator begin();
+	 unordered_map<Tree*, Tree*>::iterator end();
 };
 #endif // MAPPING_STORE
