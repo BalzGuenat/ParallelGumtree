@@ -13,16 +13,16 @@ Tree::~Tree() {
     }
 }
 
-void Tree::get_trees(Tree* tree, vector<Tree*>& trees) {
+void Tree::getTrees(const Tree* tree, vector<const Tree*>& trees) const {
 	trees.push_back(tree);
 	if (!tree->isLeaf())
 		for (auto child : tree->children())
-			get_trees(child, trees);
+			getTrees(child, trees);
 }
 
-vector<Tree*> Tree::get_trees() {
-	vector<Tree*> trees;
-	get_trees(this, trees);
+vector<const Tree*> Tree::getTrees() const {
+	vector<const Tree*> trees;
+	getTrees(this, trees);
 	return trees;
 }
 
@@ -48,7 +48,7 @@ vector<string> Tree::subTreeToStringVector() const {
   return strings;
 }
 
-bool Tree::isClone(Tree *other) const {
+bool Tree::isClone(const Tree *other) const {
   if (this->_type != other->_type ||
       this->_label.compare(other->_label) != 0 ||
       this->_children.size() != other->_children.size())
@@ -151,4 +151,14 @@ Tree::PostOrderStruct::PostOrderIterator::operator ++() {
 	}
 
 	return *this;
+}
+
+vector<const Tree*> Tree::descendants() const {
+	vector<const Tree*> result(size() - 1);
+	auto trees = getTrees();
+	auto it = trees.begin();
+	++it;
+	for (unsigned i = 0; it != trees.end();)
+		result[i++] = *it++;
+	return result;
 }

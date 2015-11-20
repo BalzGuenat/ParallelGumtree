@@ -7,20 +7,20 @@ class Matcher
 {
 
 protected:
-  Tree* src;
-  Tree* dst;
+  const Tree* src;
+  const Tree* dst;
   MappingStore* mappings;
 
-  void add_mapping(Tree* src, Tree* dst);
-  void add_full_mapping(Tree* src, Tree* dst);
-  double chawatheSimilarity(Tree* src, Tree* dst);
-  double diceSimilarity(Tree* src, Tree* dst);
-  double jaccardSimilarity(Tree* src, Tree* dst);
-  int numberOfCommonDescendants(Tree* src, Tree* dst);
+  void add_mapping(const Tree* src, const Tree* dst);
+  void add_full_mapping(const Tree* src, const Tree* dst);
+  double chawatheSimilarity(const Tree* src, const Tree* dst);
+  double diceSimilarity(const Tree* src, const Tree* dst);
+  double jaccardSimilarity(const Tree* src, const Tree* dst);
+  int numberOfCommonDescendants(const Tree* src, const Tree* dst);
   void clean();
 
 public:
-  Matcher(Tree* src, Tree* dst, MappingStore* store);
+  Matcher(const Tree* src, const Tree* dst, MappingStore* store);
   virtual void match() = 0;
   const MappingStore* get_mappings();
   set<Mapping> get_mapping_set();

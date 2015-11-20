@@ -2,7 +2,7 @@
 
 unsigned SubTreeMatcher::MIN_HEIGHT = 2;
 
-SubTreeMatcher::SubTreeMatcher(Tree* src, Tree* dst, MappingStore* store)
+SubTreeMatcher::SubTreeMatcher(const Tree* src, const Tree* dst, MappingStore* store)
   : Matcher(src, dst, store) {}
 
 void SubTreeMatcher::popLarger(PriorityTreeList& srcs, PriorityTreeList& dsts)
@@ -32,8 +32,8 @@ void SubTreeMatcher::match()
 
 				for (unsigned i = 0; i < hSrcs->size(); i++) {
 					 for (unsigned j = 0; j < hDsts->size(); j++) {
-						  Tree* src = hSrcs->at(i);
-						  Tree* dst = hDsts->at(j);
+						  const Tree* src = hSrcs->at(i);
+						  const Tree* dst = hDsts->at(j);
 
                     if (src->isClone(dst)) {
                         multiMappings.link(src, dst);
@@ -56,7 +56,7 @@ void SubTreeMatcher::match()
         filterMappings(multiMappings);
 }
 
-double SubTreeMatcher::sim(Tree* src, Tree* dst)
+double SubTreeMatcher::sim(const Tree* src, const Tree* dst)
 {
   double jaccard = jaccardSimilarity(src->parent(), dst->parent());
   int posSrc = (src->isRoot()) ? 0 : src->parent()->childPosition(src);
@@ -87,7 +87,7 @@ int SubTreeMatcher::PriorityTreeList::peekHeight() {
 	return (currentIdx == -1) ? -1 : height(currentIdx);
 }
 
-void SubTreeMatcher::PriorityTreeList::open(Tree *tree) {
+void SubTreeMatcher::PriorityTreeList::open(const Tree *tree) {
 	for (auto child : tree->children())
 		addTree(child);
 }
@@ -102,7 +102,7 @@ void SubTreeMatcher::PriorityTreeList::updateHeight() {
 	}
 }
 
-vector<Tree*>* SubTreeMatcher::PriorityTreeList::pop() {
+vector<const Tree*>* SubTreeMatcher::PriorityTreeList::pop() {
 	if (currentIdx == -1)
 		return nullptr;
 	else {
@@ -112,16 +112,16 @@ vector<Tree*>* SubTreeMatcher::PriorityTreeList::pop() {
 	}
 }
 
-void SubTreeMatcher::PriorityTreeList::addTree(Tree *tree) {
+void SubTreeMatcher::PriorityTreeList::addTree(const Tree *tree) {
 	if (tree->height() >= MIN_HEIGHT) {
 		int i = idx(tree);
 		if (!trees.at(i))
-			trees.at(i) = new vector<Tree*>;
+			trees.at(i) = new vector<const Tree*>;
 		trees.at(i)->push_back(tree);
 	}
 }
 
-vector<Tree*>* SubTreeMatcher::PriorityTreeList::open() {
+vector<const Tree*>* SubTreeMatcher::PriorityTreeList::open() {
 	auto popped = pop();
 	if (popped) {
 		for (auto tree : *popped)
@@ -132,13 +132,13 @@ vector<Tree*>* SubTreeMatcher::PriorityTreeList::open() {
 		return nullptr;
 }
 
-SubTreeMatcher::PriorityTreeList::PriorityTreeList(Tree *tree) {
+SubTreeMatcher::PriorityTreeList::PriorityTreeList(const Tree *tree) {
 	int listSize = tree->height() - MIN_HEIGHT + 1;
 	if (listSize < 0)
 		listSize = 0;
 	if (listSize == 0)
 		currentIdx = -1;
-	trees = vector<vector<Tree*>*>(listSize);
+	trees = vector<vector<const Tree*>*>(listSize);
 	maxHeight = tree->height();
 	addTree(tree);
 }

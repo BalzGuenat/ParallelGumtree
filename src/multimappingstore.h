@@ -9,17 +9,17 @@ class MultiMappingStore
 {
 	public:
 		MultiMappingStore();
-		void link(Tree* src, Tree* dst);
-		set<Tree*> getSrc(Tree* dst) const;
-		set<Tree*> getDst(Tree* src) const;
-		set<Tree*> getSrcs() const;
-		set<Tree*> getDsts() const;
-		bool isSrcUnique(Tree* src) const;
+		void link(const Tree* src, const Tree* dst);
+		set<const Tree*> getSrc(const Tree* dst) const;
+		set<const Tree*> getDst(const Tree* src) const;
+		set<const Tree*> getSrcs() const;
+		set<const Tree*> getDsts() const;
+		bool isSrcUnique(const Tree* src) const;
 	private:
-		multimap<Tree*, Tree*> _srcs;
-		multimap<Tree*, Tree*> _dsts;
+		multimap<const Tree*, const Tree*> _srcs;
+		multimap<const Tree*, const Tree*> _dsts;
 };
 
-inline void MultiMappingStore::link(Tree *src, Tree *dst) { _srcs.insert({src, dst}); }
+inline void MultiMappingStore::link(const Tree *src, const Tree *dst) { _srcs.insert({src, dst}); }
 
 #endif // MULTIMAPPINGSTORE_H

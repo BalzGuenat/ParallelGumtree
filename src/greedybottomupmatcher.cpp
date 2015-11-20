@@ -63,8 +63,8 @@ vector<Tree*> GreedyBottomUpMatcher::getDstCandidates(Tree* src) {
 void GreedyBottomUpMatcher::lastChanceMatch(Tree* src, Tree* dst) {
 	// not properly implemented because we have no ZsMatcher.
 
-	for (auto t : src->get_trees())
-		t->set_matched();
-	for (auto t : dst->get_trees())
-		t->set_matched();
+	for (auto t : src->getTrees())
+		t->setMatched();
+	for (auto t : dst->getTrees())
+		t->setMatched();
 }

@@ -22,7 +22,7 @@ Tree* FileParser::parse(string filepath) {
 
       auto parent = parents.empty() ? nullptr : parents.top();
 		auto tree = parseLine(parent, line, ++lineNumber);
-		tree->set_depth(depth);
+		tree->setDepth(depth);
       parents.push(tree);
     }
   while (parents.size() > 1)
@@ -32,7 +32,7 @@ Tree* FileParser::parse(string filepath) {
   // post order numbering and height
   int id = 0;
   for (auto t : parents.top()->postOrder()) {
-	  t->set_id(id++);
+	  t->setId(id++);
 	  unsigned height = 0;
 	  if (!t->isLeaf()) {
 		  for (auto c : t->children()) {
@@ -41,7 +41,7 @@ Tree* FileParser::parse(string filepath) {
 		  }
 		  ++height;
 	  }
-	  t->set_height(height);
+	  t->setHeight(height);
   }
 
   return parents.empty() ? nullptr : parents.top();
@@ -65,7 +65,7 @@ vector<string> split(string s, char c) {
 Tree* FileParser::parseLine(Tree* parent, string line, int lineNumber) {
   auto fields = split(line, ':');
   Tree* tree = new Tree(stoi(fields[0]), fields[1], lineNumber);
-  tree->set_id(lineNumber);
+  tree->setId(lineNumber);
   tree->_parent = parent;
   if (parent)
     parent->_children.push_back(tree);

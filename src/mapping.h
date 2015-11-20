@@ -3,7 +3,7 @@
 
 #include "tree.h"
 
-using Mapping = pair<Tree*, Tree*>;
+using Mapping = pair<const Tree*, const Tree*>;
 
 #endif // MAPPING_H
 

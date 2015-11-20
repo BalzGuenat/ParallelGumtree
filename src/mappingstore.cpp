@@ -26,19 +26,19 @@ MappingStore MappingStore::copy()
   return MappingStore(asSet());
 }
 
-void MappingStore::link(Tree *src, Tree *dst)
+void MappingStore::link(const Tree *src, const Tree *dst)
 {
   MappingStore::srcs.insert(make_pair(src, dst));
   MappingStore::dsts.insert(make_pair(dst, src));
 }
 
-void MappingStore::unlink(Tree *src, Tree *dst)
+void MappingStore::unlink(const Tree *src, const Tree *dst)
 {
   MappingStore::srcs.erase(src);
   MappingStore::dsts.erase(dst);
 }
 
-Tree* MappingStore::first_mapped_src_parent(Tree *src)
+const Tree* MappingStore::first_mapped_src_parent(const Tree *src)
 {
   auto parent = src->parent();
   if (!parent)
@@ -53,7 +53,7 @@ Tree* MappingStore::first_mapped_src_parent(Tree *src)
     }
 }
 
-Tree* MappingStore::first_mapped_dst_parent(Tree *dst)
+const Tree* MappingStore::first_mapped_dst_parent(const Tree *dst)
 {
   auto parent = dst->parent();
   if (!parent)
@@ -68,7 +68,7 @@ Tree* MappingStore::first_mapped_dst_parent(Tree *dst)
     }
 }
 
-Tree* MappingStore::get_dst(Tree *src){
+const Tree* MappingStore::get_dst(const Tree *src){
 	try {
 		return srcs.at(src);
 	} catch (out_of_range) {
@@ -76,7 +76,7 @@ Tree* MappingStore::get_dst(Tree *src){
 	}
 }
 
-Tree* MappingStore::get_src(Tree *dst)
+const Tree* MappingStore::get_src(const Tree *dst)
 {
 	try {
 		return dsts.at(dst);
@@ -85,7 +85,7 @@ Tree* MappingStore::get_src(Tree *dst)
 	}
 }
 
-bool MappingStore::has_src(Tree *src)
+bool MappingStore::has_src(const Tree *src)
 {
   try {
     srcs.at(src);
@@ -95,7 +95,7 @@ bool MappingStore::has_src(Tree *src)
   }
 }
 
-bool MappingStore::has_dst(Tree *dst)
+bool MappingStore::has_dst(const Tree *dst)
 {
   try {
     dsts.at(dst);
@@ -105,7 +105,7 @@ bool MappingStore::has_dst(Tree *dst)
   }
 }
 
-bool MappingStore::has(Tree *src, Tree *dst)
+bool MappingStore::has(const Tree *src, const Tree *dst)
 {
   try {
     return srcs.at(src) == dst;
@@ -114,12 +114,12 @@ bool MappingStore::has(Tree *src, Tree *dst)
   }
 }
 
-unordered_map<Tree*, Tree*>::iterator MappingStore::get_iterator_begin()
+unordered_map<const Tree*, const Tree*>::iterator MappingStore::begin()
 {
  return srcs.begin();
 }
 
-unordered_map<Tree*, Tree*>::iterator MappingStore::get_iterator_end()
+unordered_map<const Tree*, const Tree*>::iterator MappingStore::end()
 {
  return srcs.end();
 }
