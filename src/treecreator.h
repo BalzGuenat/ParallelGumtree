@@ -8,7 +8,6 @@ using namespace std;
 class TreeCreator
 {
 public:
-  static void newTrees(unsigned depth, unsigned maxChildren, string filepath);
   static void pruferTrees(unsigned nodeNumber, string filepath);
 private:
   static Tree* seq2Tree(unsigned nodeNumber);
@@ -21,19 +20,7 @@ private:
 
 
   // "Settings"
-  static const bool minHalfFull = false;
   static const unsigned maxTypes = 100;
-  static const unsigned maxLabelLength = 50;
-  static const double varySize; // by how much may the tree size change
-  static const double permNumb; // how many permuations? (ex. 1/4th the number of nodes)
-
-  // modify random settings
-  static const double delChance;
-  static const double moveChance;
-  static const double swapChance;
-  static const double labelEditChance;
-  static const double typeEditChance;
-  static const double copyChance;
 
 };
 

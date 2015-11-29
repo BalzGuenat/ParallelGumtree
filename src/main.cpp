@@ -8,10 +8,10 @@
 
 using namespace std;
 
-// TODO @Chris: Please add a better description of what happens with -create.
+const int DEFAULT_PRUFERTREE_SIZE = 1000;
 const string USAGE_TEXT = "ParallelGumtree\n"
 								  "Usage: ParallelGumtree FILE0 [FILE1]\n"
-								  "       ParallelGumtree -create\n"
+								  "       ParallelGumtree -create [NUMBER]\n"
 								  "\n"
 								  "where FILEn encodes a tree Tn.\n"
 								  "If FILE1 is provided then a matching between T0 and T1 "
@@ -19,7 +19,10 @@ const string USAGE_TEXT = "ParallelGumtree\n"
 								  "If FILE1 is not provided then FILE0 is parsed, T0 is built "
 								  "internally and then written to stdout and \"FILE1.replica\".\n"
 								  "If ParallelGumtree is called with the -create option, "
-								  "pruferTrees is called.";
+								  "pruferTrees is called which creates two similar trees "
+								  "in the working directory \ncalled randomPrufer1 and randomPrufer2. "
+								  "If NUMBER is provided (and NUMBER>=10) for -create, the created trees will have about that\n"
+								  "many nodes. Otherwise it will have the default size of about " + to_string(DEFAULT_PRUFERTREE_SIZE) + " nodes.";
 
 int main(int argc, char* argv[])
 {
@@ -33,7 +36,7 @@ int main(int argc, char* argv[])
 		return 0;
 
 	} else if (argc == 2 && args[1] == "-create") {
-		TreeCreator::pruferTrees(20000, "randomPrufer");
+		TreeCreator::pruferTrees(DEFAULT_PRUFERTREE_SIZE, "randomPrufer");
 		return 0;
 
 	} else if (argc == 2) {
@@ -48,6 +51,19 @@ int main(int argc, char* argv[])
 		delete t; t = nullptr;
 		return 0;
 
+	} else if (argc == 3 && args[1] == "-create") {
+		int size;
+		try {
+			size = stoi(args[2], NULL, 10); // convert
+		} catch (const invalid_argument&) {
+			size = 0;
+		} if (size<10) {
+			cout << "The argument NUMBER is smaller than 10 or not an integer. The default size of " << DEFAULT_PRUFERTREE_SIZE << " was taken to create the tree." << endl;
+			TreeCreator::pruferTrees(DEFAULT_PRUFERTREE_SIZE, "randomPrufer");
+		  } else {
+			TreeCreator::pruferTrees(size, "randomPrufer");
+		  }
+		return 0;
 	} else if (argc == 3) {
 		// two files were passed, match them
 		auto file0 = args[1];

@@ -11,42 +11,6 @@
 using namespace std;
 
 unsigned TreeCreator::label_counter = 0;
-const double TreeCreator::varySize = 0.25; // by how much may the tree size change
-const double TreeCreator::permNumb = 0.15; // how many permuations? (ex. 1/4th the number of nodes)
-
-void TreeCreator::newTrees(unsigned depth, unsigned maxChildren, string filepath){
-  srand (time(NULL)); // get new random seed
-
-  vector<Tree *> nodes[depth]; // stores pointers to each node on each level
-  nodes[0].push_back(new Tree(rNumber(), nextLabel(), 0)); //
-  //for (int i = 0; i < 100; i++) printf(rLabel()+"\n");
-
-  // iterate over all depth and create children on each
-  for (unsigned curDepth = 0; curDepth < depth; curDepth++){
-
-      // iterate over all trees on the current depth
-      for (auto currentDepthNode : nodes[curDepth]) {
-
-          // create random number of children for this one each
-          unsigned numbChild;
-          if (TreeCreator::minHalfFull){
-              numbChild = 1 + ((maxChildren -1) / 2); // ceil(maxChildren/2)
-              numbChild =  numbChild + (rand() % numbChild);
-            }
-          else {
-              numbChild = rand() % maxChildren;
-            }
-          for (unsigned n = 0; n < numbChild; n++) {
-              auto t = new Tree(rNumber(), nextLabel(), 0);
-              t->_parent = currentDepthNode;
-              currentDepthNode->_children.push_back(t);
-              nodes[curDepth+1].push_back(t);
-            }
-        }
-    }
-
-  FileWriter::write(nodes[0][0],filepath+"0");
-}
 
 Tree* TreeCreator::seq2Tree(unsigned nodeNumber){
     vector<Tree*> nodes (nodeNumber, NULL);
@@ -105,13 +69,6 @@ void TreeCreator::pruferTrees(unsigned nodeNumber, string filepath) {
   FileWriter::write(root1, filepath+"1");
   FileWriter::write(root2, filepath+"2");
 }
-
-const double delChance = 20; // 1/20 chance, same for the ones below
-const double moveChance = 20;
-const double swapChance = 20;
-const double labelEditChance = 20;
-const double typeEditChance = 20;
-const double copyChance = 20;
 
 
 
