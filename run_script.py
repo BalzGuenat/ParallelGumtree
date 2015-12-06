@@ -34,12 +34,12 @@ for i in input_range:
 	referenceGumtreeTimes.append(toc - tic)
 	
 	# compare if each solution is the same:
-	if not filecmp.cmp('tree_' + str(i) + '_2.mtch','tree_' + str(i) + '_match.mtch'):
+	if not filecmp.cmp('tree_' + str(i) + '_2.mtch','tree_' + str(i) + '_2_parallel.mtch'):
 		print "Matches of run " + str(i) + " are not equal!"
 
 # plot everything
-plt.plot(average_linecount, parallelGumtreeTimes)
-plt.plot(average_linecount, referenceGumtreeTimes)
+plt.plot(average_linecount, parallelGumtreeTimes, marker='o')
+plt.plot(average_linecount, referenceGumtreeTimes, marker='o')
 plt.ylabel('elapsed time')
 plt.xlabel('input size')
 plt.legend(['parallel Gumtree', 'java reference algorithm'], loc='upper left')

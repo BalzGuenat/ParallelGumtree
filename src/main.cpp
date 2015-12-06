@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "tree.h"
 #include "fileparser.h"
 #include "classicgumtree.h"
@@ -74,8 +75,12 @@ int main(int argc, char* argv[])
 		MappingStore mapping;
 		ClassicGumtree matcher(t0, t1, &mapping);
 		matcher.match();
-		for (auto m : mapping.asSet())
+		ofstream outputFile(args[1]+"_2_parallel.mtch");
+		for (auto m : mapping.asSet()) {
 			cout << m.first->lineNumber() << " -> " << m.second->lineNumber() << endl;
+			outputFile << m.first->lineNumber() << " -> " << m.second->lineNumber() << endl;
+		  }
+		outputFile.close();
 		delete t0; t0 = nullptr;
 		delete t1; t1 = nullptr;
 		return 0;
