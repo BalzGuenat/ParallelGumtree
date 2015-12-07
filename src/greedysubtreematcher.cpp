@@ -78,7 +78,7 @@ void GreedySubTreeMatcher::filterMappings(MultiMappingStore& multiMappings) {
 		  for (auto src : multiMappings.getSrcs()) {
 				if (multiMappings.isSrcUnique(src))
 					 add_full_mapping(src, *multiMappings.getDst(src).begin());
-				else if (ignored.find(src) != ignored.end()) {
+				else if (ignored.find(src) == ignored.end()) {
 					 set<Tree*> adsts = multiMappings.getDst(src);
 					 set<Tree*> asrcs = multiMappings.getSrc(*multiMappings.getDst(src).begin());
 					 for (auto asrc : asrcs)

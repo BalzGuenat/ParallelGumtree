@@ -20,6 +20,7 @@ class MultiMappingStore
 		multimap<Tree*, Tree*> _dsts;
 };
 
-inline void MultiMappingStore::link(Tree *src, Tree *dst) { _srcs.insert({src, dst}); }
+inline void MultiMappingStore::link(Tree *src, Tree *dst) { _srcs.insert({src, dst});
+							  _dsts.insert({dst, src});}
 
 #endif // MULTIMAPPINGSTORE_H

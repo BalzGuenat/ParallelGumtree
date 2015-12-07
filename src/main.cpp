@@ -58,8 +58,8 @@ int main(int argc, char* argv[])
 			size = stoi(args[2], NULL, 10); // convert
 		} catch (const invalid_argument&) {
 			size = 0;
-		} if (size<10) {
-			cout << "The argument NUMBER is smaller than 10 or not an integer. The default size of " << DEFAULT_PRUFERTREE_SIZE << " was taken to create the tree." << endl;
+		} if (size<20) {
+			cout << "The argument NUMBER is smaller than 20 or not an integer. The default size of " << DEFAULT_PRUFERTREE_SIZE << " was taken to create the tree." << endl;
 			TreeCreator::pruferTrees(DEFAULT_PRUFERTREE_SIZE, "randomPrufer");
 		  } else {
 			TreeCreator::pruferTrees(size, "randomPrufer");
