@@ -14,13 +14,12 @@ private:
   static Tree* modifyTreeRandom(unsigned initNodeNumber, unsigned targetNodeNumber, Tree* root);
   static void addNodes(Tree* root, vector<Tree*> &nodes);
   static unsigned label_counter;
-  static string labels[100];
   static int rNumber();
   static string nextLabel();
 
 
   // "Settings"
-  static const unsigned maxTypes = 100;
+  static const unsigned maxTypes = 5;
 
 };
 
