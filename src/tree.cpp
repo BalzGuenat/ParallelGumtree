@@ -54,7 +54,7 @@ vector<string> Tree::subTreeToStringVector() const {
     *s = ' ' + *s;
   return strings;
 }
-
+/*
 bool Tree::isClone(Tree *other) const {
 	bool alltrue = true;
 	#pragma omp parallel
@@ -78,6 +78,20 @@ bool Tree::isClone(Tree *other) const {
 		}
 	}
 	return alltrue;
+}*/
+
+bool Tree::isClone(Tree *other) const {
+  if (this->_type != other->_type ||
+		this->_label.compare(other->_label) != 0 ||
+		this->_children.size() != other->_children.size())
+	 return false;
+  else {
+		for (unsigned i = 0; i < _children.size(); ++i) {
+			 if (!_children[i]->isClone(other->_children[i]))
+				return false;
+		  }
+		return true;
+	 }
 }
 
 void Tree::refresh() {
