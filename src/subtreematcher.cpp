@@ -1,6 +1,6 @@
 #include "subtreematcher.h"
 
-unsigned SubTreeMatcher::MIN_HEIGHT = 2;
+unsigned SubTreeMatcher::MIN_HEIGHT = 1;
 
 SubTreeMatcher::SubTreeMatcher(Tree* src, Tree* dst, MappingStore* store)
   : Matcher(src, dst, store) {}
