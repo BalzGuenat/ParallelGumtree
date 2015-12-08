@@ -56,17 +56,28 @@ vector<string> Tree::subTreeToStringVector() const {
 }
 
 bool Tree::isClone(Tree *other) const {
-  if (this->_type != other->_type ||
-      this->_label.compare(other->_label) != 0 ||
-      this->_children.size() != other->_children.size())
-    return false;
-  else {
-      for (unsigned i = 0; i < _children.size(); ++i) {
-          if (!_children[i]->isClone(other->_children[i]))
-            return false;
-        }
-      return true;
-    }
+	bool alltrue = true;
+	#pragma omp parallel
+	{
+		#pragma omp single
+		{
+			if (this->_type != other->_type ||
+				 this->_label.compare(other->_label) != 0 ||
+				 this->_children.size() != other->_children.size())
+				alltrue = false;
+			else {
+				for (unsigned i = 0; i < _children.size(); ++i) {
+					#pragma omp task shared(i, alltrue)
+					{
+						if (!_children[i]->isClone(other->_children[i]))
+							alltrue = false;
+					}
+				}
+				#pragma omp taskwait
+			}
+		}
+	}
+	return alltrue;
 }
 
 Tree* Tree::clone() {

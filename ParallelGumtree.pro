@@ -4,6 +4,9 @@ CONFIG -= app_bundle
 CONFIG -= qt
 CONFIG += c++11
 
+QMAKE_CXXFLAGS += -fopenmp
+QMAKE_LFLAGS +=  -fopenmp
+
 SOURCES += src/main.cpp \
     src/tree.cpp \
     src/fileparser.cpp \
