@@ -14,7 +14,7 @@ set<Tree*> MultiMappingStore::getSrc(Tree* dst) const {
 }
 
 set<Tree*> MultiMappingStore::getDst(Tree* src) const {
-	auto r = _dsts.equal_range(src);
+	auto r = _srcs.equal_range(src);
 	set<Tree*> dst;
 	for (auto it = r.first; it != r.second; ++it)
 		dst.insert(it->second);

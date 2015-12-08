@@ -125,7 +125,7 @@ void Tree::compute_depth() {
 void Tree::compute_height() {
 	for (auto t : postOrder()) {
 		unsigned height = 0;
-		if (!isLeaf()) {
+		if (!t->isLeaf()) {
 			for (auto c : t->children()) {
 				unsigned cHeight = c->height();
 				if (cHeight > height)
