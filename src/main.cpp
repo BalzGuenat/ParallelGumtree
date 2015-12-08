@@ -75,9 +75,9 @@ int main(int argc, char* argv[])
 		MappingStore mapping;
 		ClassicGumtree matcher(t0, t1, &mapping);
 		matcher.match();
-		ofstream outputFile(args[1]+"_2_parallel.mtch");
+		ofstream outputFile(file1 + "_parallel.mtch");
 		for (auto m : mapping.asSet()) {
-			cout << m.first->lineNumber() << " -> " << m.second->lineNumber() << endl;
+			//cout << m.first->lineNumber() << " -> " << m.second->lineNumber() << endl;
 			outputFile << m.first->lineNumber() << " -> " << m.second->lineNumber() << endl;
 		  }
 		outputFile.close();

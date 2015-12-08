@@ -29,7 +29,7 @@ Tree* TreeCreator::seq2Tree(unsigned nodeNumber){
       degree[sequence[i]]++;
     }
   for (unsigned i = 0; i < nodeNumber; i++) {
-    nodes[i] = new Tree(rNumber(), "Label "+ (std::to_string(i)), 0);
+	 nodes[i] = new Tree(rNumber(), "label"+ (std::to_string(i)), 0);
     }
   unsigned ptr = 0;
   while (degree[ptr] != (unsigned)1)
@@ -190,11 +190,11 @@ Tree* TreeCreator::modifyTreeRandom(unsigned initNodeNumber, unsigned targetNode
     max = max + max/2;
     for (unsigned i = 0; i < edit1; i++) {
         unsigned n = rand() % nodes1.size();
-        nodes1[n] = new Tree(nodes1[n]->type(), "Label " + (std::to_string(rand() % max)), 0);
+		  nodes1[n] = new Tree(nodes1[n]->type(), "label" + (std::to_string(rand() % max)), 0);
     }
     for (unsigned i = 0; i < edit2; i++) {
         unsigned n = rand() % nodes2.size();
-        nodes2[n] = new Tree(nodes2[n]->type(), "Label " + (std::to_string(rand() % max)), 0);
+		  nodes2[n] = new Tree(nodes2[n]->type(), "label" + (std::to_string(rand() % max)), 0);
     }
 
     // change type numbers
