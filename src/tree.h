@@ -54,8 +54,14 @@ public:
   int childPosition(const Tree* child) const;
   unsigned height() const;
   unsigned depth() const;
+  void set_size(unsigned size);
   void set_height(unsigned height);
   void set_depth(unsigned depth);
+
+  void refresh();
+  void compute_size();
+  void compute_depth();
+  void compute_height();
 
   Tree* clone();
 
@@ -81,6 +87,7 @@ private:
   vector<Tree*> _children;
   bool _isMatched = false;
   int _id;
+  unsigned _size;
   unsigned _height;
   unsigned _depth;
 };
@@ -100,8 +107,10 @@ inline int Tree::id() const { return _id; }
 inline void Tree::set_id(int id) { _id = id; }
 inline unsigned Tree::height() const { return _height; }
 inline unsigned Tree::depth() const { return _depth; }
+inline void Tree::set_size(unsigned size) { _size = size; }
 inline void Tree::set_height(unsigned height) { _height = height; }
 inline void Tree::set_depth(unsigned depth) { _depth = depth; }
 inline Tree::PostOrderStruct Tree::postOrder() { return PostOrderStruct(this); }
+inline unsigned Tree::size() const { return _size; }
 
 #endif // TREE_H

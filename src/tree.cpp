@@ -80,6 +80,49 @@ bool Tree::isClone(Tree *other) const {
 	return alltrue;
 }
 
+void Tree::refresh() {
+	compute_size();
+	compute_depth();
+	compute_height();
+}
+
+void Tree::compute_size() {
+	for (auto tree : postOrder()) {
+		unsigned size = 1;
+		if (!tree->isLeaf()) {
+			for (auto c : tree->children())
+				size += c->size();
+		}
+		tree->set_size(size);
+	}
+}
+
+void Tree::compute_depth() {
+	if (isRoot())
+		_depth = 0;
+	else
+		_depth = parent()->depth() + 1;
+
+	if (!isLeaf())
+		for (auto c : _children)
+			c->compute_depth();
+}
+
+void Tree::compute_height() {
+	for (auto t : postOrder()) {
+		unsigned height = 0;
+		if (!isLeaf()) {
+			for (auto c : t->children()) {
+				unsigned cHeight = c->height();
+				if (cHeight > height)
+					height = cHeight;
+			}
+			height++;
+		}
+		t->set_height(height);
+	}
+}
+
 Tree* Tree::clone() {
     // maybe implement with loop unrolling instead of recursively
     // queue of pairs of (newParent, oldChild)?
@@ -96,15 +139,6 @@ int Tree::childPosition(const Tree* child) const {
         return i;
     }
   return -1;
-}
-
-unsigned Tree::size() const {
-  // TODO optimize this by precomputation.
-  unsigned size = 1;
-  for (auto c : _children) {
-      size += c->size();
-    }
-  return size;
 }
 
 Tree::PostOrderStruct::PostOrderStruct(Tree *root)

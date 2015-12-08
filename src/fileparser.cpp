@@ -44,7 +44,13 @@ Tree* FileParser::parse(string filepath) {
 	  t->set_height(height);
   }
 
-  return parents.empty() ? nullptr : parents.top();
+  if (parents.empty())
+	  return nullptr;
+  else {
+	  auto root = parents.top();
+	  root->refresh();
+	  return root;
+  }
 }
 
 vector<string> split(string s, char c) {
