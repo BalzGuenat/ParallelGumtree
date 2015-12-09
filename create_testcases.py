@@ -19,7 +19,7 @@ linecount_file.truncate()
 while i < 400000: # create the test case files and write the linecount
 	filename1 = 'test_cases/tree_' + str(i) + '_1.test'
 	filename2 = 'test_cases/tree_' + str(i) + '_2.test'
-	subprocess.call(['./ParallelGumtree', '-create', value])
+	subprocess.call(['./ParallelGumtree', '-create', str(value)])
 	
 	# move the files
 	os.rename("randomPrufer1", filename1)
