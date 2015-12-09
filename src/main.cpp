@@ -51,22 +51,23 @@ int main(int argc, char* argv[])
 
 	if ((idx_it = options.find("-create")) != options.end()) {
 		int i = idx_it->second;
-		bool size_provided = false;
 		int size;
 		if (i+1 < argc && args[i+1][0] != '-')
 			try {
 			size = stoi(args[i+1]);
-			size_provided = true;
-		} catch (const invalid_argument&) {
-			size = 0;
+			} catch (const invalid_argument&) {
+				size = 0;
+			}
+		else {
+			size = DEFAULT_PRUFERTREE_SIZE;
 		}
+
 		if (size < 20) {
-			if (size_provided)
-				cout << "The argument NUMBER is smaller than 20 or not an integer. The default size of " << DEFAULT_PRUFERTREE_SIZE << " was taken to create the tree." << endl;
-			TreeCreator::pruferTrees(DEFAULT_PRUFERTREE_SIZE, "randomPrufer");
-		} else {
-			TreeCreator::pruferTrees(size, "randomPrufer");
+			cout << "The SIZE argument provided to the -create option is smaller than 20 or not an integer." << endl;
+			return -1;
 		}
+
+		TreeCreator::pruferTrees(size, "randomPrufer");
 	}
 
 	if ((idx_it = options.find("-num-threads")) != options.end()) {
