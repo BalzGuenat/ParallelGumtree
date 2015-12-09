@@ -7,24 +7,18 @@ import numpy as np
 import os
 import filecmp
 
-input_range = range(10, 14)
+input_range = range(0, 27)
 parallelGumtreeTimes = []
 referenceGumtreeTimes = []
-average_linecount = []
+with open('test_cases/linecount') as file:
+	average_linecount = f.readlines()
+average_linecount = map(str.strip, average_linecount)
+average_linecount = map(int, average_linecount)
 
 for i in input_range:
-	input_size = str(2**i)
-	
-	# create trees
-	subprocess.call(['./ParallelGumtree', '-create', input_size])
-	# rename trees
-	filename1 = 'tree_' + str(i) + '_1.test'
-	filename2 = 'tree_' + str(i) + '_2.test'
-	os.rename("randomPrufer1", filename1)
-	os.rename("randomPrufer2", filename2)
-	# get the exact average line count of both trees
-	average_linecount.append((sum(1 for line in open(filename1)) + sum(1 for line in open(filename2)))/2)
-	
+	filename1 = 'test_cases/tree_' + str(i) + '_1.test'
+	filename2 = 'test_cases/tree_' + str(i) + '_2.test'
+
 	# run and time the parallel Gumtree
 	tic = time.clock()
 	subprocess.call(['./ParallelGumtree',filename1, filename2])
