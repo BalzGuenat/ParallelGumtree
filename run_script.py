@@ -26,15 +26,15 @@ for i in input_range:
 	average_linecount.append((sum(1 for line in open(filename1)) + sum(1 for line in open(filename2)))/2)
 	
 	# run and time the parallel Gumtree
-	tic = time.clock()
+	tic = time.time()
 	subprocess.call(['./ParallelGumtree',filename1, filename2])
-	toc = time.clock()
+	toc = time.time()
 	parallelGumtreeTimes.append(toc-tic)
 	
 	# run and time the java reference algorithm
-	tic = time.clock()
+	tic = time.time()
 	subprocess.call(['java', '-cp', './gumtree.jar', 'com.github.gumtreediff.client.Run', '-c', 'Clients.experimental', 'true', '-c', 'match.gt.minh', '1', '-c', 'match.bu.sim', '0.5', 'testdump', '-g', 'testgen', '-m', 'gumtree', filename1, filename2])
-	toc = time.clock()
+	toc = time.time()
 	referenceGumtreeTimes.append(toc - tic)
 	
 	# compare if each solution is the same:
