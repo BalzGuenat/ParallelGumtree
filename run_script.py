@@ -7,7 +7,7 @@ import numpy as np
 import os
 import filecmp
 
-input_range = range(0, 27)
+input_range = range(0, 32)
 
 # empty the average linecount file
 with open('test_cases/linecount') as file:
