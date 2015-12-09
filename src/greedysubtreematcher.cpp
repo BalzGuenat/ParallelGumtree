@@ -14,7 +14,7 @@ struct GreedySubTreeMatcher::Comparator {
 
   bool operator() (Mapping* i,Mapping* j)
   {
-		return simMap[i] < simMap[j]; // TODO make absolutely sure this is the right way around.
+		return simMap[i] < simMap[j];
   }
 
   Comparator(vector<Mapping*> mappings, MappingStore* mappingStore, unsigned maxTreeSize)

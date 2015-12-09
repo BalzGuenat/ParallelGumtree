@@ -12,7 +12,7 @@ Tree* FileParser::parse(string filepath) {
   unsigned lineNumber = 0;
   stack<Tree*> parents;
   for (string line; getline(file, line); ) {
-      unsigned depth = 0; // TODO compute correctly. This is the indentation level.
+		unsigned depth = 0;
       while (iswspace(line[depth++]));
       depth--;
 

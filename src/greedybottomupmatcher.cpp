@@ -20,6 +20,7 @@ void GreedyBottomUpMatcher::match() {
 			Tree* best = nullptr;
 			double max = -1.0;
 
+			// TODO parallelize this loop
 			for (auto c : candidates) {
 				double sim = jaccardSimilarity(t, c);
 				if (sim > max && sim >= SIM_THRESHOLD) {

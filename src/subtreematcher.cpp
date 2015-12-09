@@ -30,6 +30,8 @@ void SubTreeMatcher::match()
 				vector<bool> srcMarks(hSrcs->size());
 				vector<bool> dstMarks(hDsts->size());
 
+				// TODO smartly prallelize these loops
+				// suggestion: each task produces pairs to be linked. in the end, these sets of pairs are collected and by a single thread added to the mapping store.
 				for (unsigned i = 0; i < hSrcs->size(); i++) {
 					 for (unsigned j = 0; j < hDsts->size(); j++) {
 						  Tree* src = hSrcs->at(i);
