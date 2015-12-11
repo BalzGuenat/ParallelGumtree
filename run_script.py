@@ -36,7 +36,7 @@ for i in range(0,sizes):
 			print('Time: ' + str(toc-tic))
 			
 		# run and time the java reference algorithm
-		print('JavaGumtree, run ' + str(r) + ' on file ' + str(i))
+		print('JavaGumtree, run ' + str(r+1) + ' on file ' + str(i))
 		tic = time.time()
 		subprocess.call(['java', '-cp', './gumtree.jar', 'com.github.gumtreediff.client.Run', '-c', 'Clients.experimental', 'true', '-c', 'match.gt.minh', '1', '-c', 'match.bu.sim', '0.5', 'testdump', '-g', 'testgen', '-m', 'gumtree', filename1, filename2])
 		toc = time.time()
@@ -45,7 +45,7 @@ for i in range(0,sizes):
 	
 	# compare if each solution is the same:
 	if not filecmp.cmp(filename2 + '.mtch', filename2 + '_parallel.mtch'):
-		print "Matches of run " + str(i) + " are not equal!"
+		print "Matches of file " + str(i) + " are not equal!"
 # calculate average for the times and plot everything
 for t in range(0,max_threads):
 	parallel_average_times = parallelGumtreeTimes[t].mean(axis=0)

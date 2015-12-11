@@ -184,8 +184,10 @@ Tree* TreeCreator::modifyTreeRandom(unsigned initNodeNumber, unsigned targetNode
         }
     }
     // change label names
-    unsigned edit1 = rand() % (nodes1.size()/2);
-    unsigned edit2 = rand() % (nodes2.size()/2);
+    unsigned edit1 = rand() % (nodes1.size()/100);
+    unsigned edit2 = rand() % (nodes2.size()/100);
+    cout << "tree sizes: " << nodes1.size() << " and " << nodes2.size() << endl;
+    cout << "label changes: " << edit1 << " and " << edit2 << endl;
     unsigned max = nodes1.size() > nodes2.size() ? nodes1.size() : nodes2.size();
     max = max + max/2;
     for (unsigned i = 0; i < edit1; i++) {
@@ -198,8 +200,9 @@ Tree* TreeCreator::modifyTreeRandom(unsigned initNodeNumber, unsigned targetNode
     }
 
     // change type numbers
-    edit1 = rand() % (nodes1.size()/2);
-    edit2 = rand() % (nodes2.size()/2);
+    edit1 = rand() % (nodes1.size()/100);
+    edit2 = rand() % (nodes2.size()/100);
+    cout << "type changes: " << edit1 << " and " << edit2 << endl;
     for (unsigned i = 0; i < edit1; i++) {
         unsigned n = rand() % nodes1.size();
         nodes1[n] = new Tree(rNumber(), nodes1[n]->label(), 0);
