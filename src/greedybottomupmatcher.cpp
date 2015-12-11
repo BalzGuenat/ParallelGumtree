@@ -1,5 +1,6 @@
 #include <vector>
 #include <set>
+#include <utility>
 
 #include "greedybottomupmatcher.h"
 #include "treemap.h"
@@ -17,18 +18,22 @@ void GreedyBottomUpMatcher::match() {
 			break;
 		} else if (!(t->isMatched() || t->isLeaf())) {
 			auto candidates = getDstCandidates(t);
-			Tree* best = nullptr;
-			double max = -1.0;
+			pair<double,Tree*> maxPair = make_pair(-1.0, nullptr);
 
-			// TODO parallelize this loop
-			for (auto c : candidates) {
+			#pragma omp declare reduction(pair_max : pair<double, Tree*> : \
+				omp_out = max(omp_in, omp_out)) \
+				initializer(omp_priv=make_pair(-1.0, nullptr))
+
+			#pragma omp parallel for reduction(pair_max:maxPair)
+			for (unsigned i = 0; i < candidates.size(); ++i) {
+				auto c = candidates[i];
 				double sim = jaccardSimilarity(t, c);
-				if (sim > max && sim >= SIM_THRESHOLD) {
-					best = c;
-					max = sim;
+				if (sim > maxPair.first && sim >= SIM_THRESHOLD) {
+					maxPair = make_pair(sim, c);
 				}
 			}
 
+			auto best = maxPair.second;
 			if (best) {
 				lastChanceMatch(t, best);
 				add_mapping(t, best);
