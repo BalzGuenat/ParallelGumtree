@@ -200,11 +200,11 @@ Tree* TreeCreator::modifyTreeRandom(unsigned initNodeNumber, unsigned targetNode
     max = max + max/2;
     for (unsigned i = 0; i < edit1; i++) {
         unsigned n = rand() % nodes1.size();
-		  nodes1[n] = new Tree(nodes1[n]->type(), "label" + (std::to_string(rand() % max)), 0);
+        nodes1[n] = new Tree(nodes1[n]->type(), "label" + (std::to_string(rand() % max)), 0);
     }
     for (unsigned i = 0; i < edit2; i++) {
         unsigned n = rand() % nodes2.size();
-		  nodes2[n] = new Tree(nodes2[n]->type(), "label" + (std::to_string(rand() % max)), 0);
+        nodes2[n] = new Tree(nodes2[n]->type(), "label" + (std::to_string(rand() % max)), 0);
     }
 
     // change type numbers
@@ -225,6 +225,27 @@ Tree* TreeCreator::modifyTreeRandom(unsigned initNodeNumber, unsigned targetNode
         unsigned n = rand() % nodes2.size();
         nodes2[n] = new Tree(rNumber(), nodes2[n]->label(), 0);
     }
+
+    // tall or bushy?
+    unsigned sum = 0;
+    unsigned non_leaves = nodes1.size();
+    for (auto &it : nodes1) {
+        if (it->isLeaf())
+            non_leaves--;
+        else
+            sum+=it->children().size();
+    }
+    cout << "average children number of file1: " << (float)sum/(float)non_leaves << endl;
+    sum = 0;
+    non_leaves = nodes2.size();
+    for (auto &it : nodes2) {
+        if (it->isLeaf())
+            non_leaves--;
+        else
+            sum+=it->children().size();
+    }
+    cout << "average children number of file2: " << (float)sum/(float)non_leaves << endl;
+
 
     return root2;
 }

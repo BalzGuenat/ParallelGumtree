@@ -20,42 +20,42 @@ void SubTreeMatcher::match()
 		  PriorityTreeList srcs(_src);
 		  PriorityTreeList dsts(_dst);
 
-        while (srcs.peekHeight() != -1 && dsts.peekHeight() != -1) {
-            while (srcs.peekHeight() != dsts.peekHeight())
-                popLarger(srcs, dsts);
+                  while (srcs.peekHeight() != -1 && dsts.peekHeight() != -1) {
+                      while (srcs.peekHeight() != dsts.peekHeight())
+                        popLarger(srcs, dsts);
 
-				auto hSrcs = srcs.pop();
-				auto hDsts = dsts.pop();
+                      auto hSrcs = srcs.pop();
+                      auto hDsts = dsts.pop();
 
-				vector<bool> srcMarks(hSrcs->size());
-				vector<bool> dstMarks(hDsts->size());
+                      vector<bool> srcMarks(hSrcs->size());
+                      vector<bool> dstMarks(hDsts->size());
 
-				// TODO smartly prallelize these loops
-				// suggestion: each task produces pairs to be linked. in the end, these sets of pairs are collected and by a single thread added to the mapping store.
-				for (unsigned i = 0; i < hSrcs->size(); i++) {
-					 for (unsigned j = 0; j < hDsts->size(); j++) {
-						  Tree* src = hSrcs->at(i);
-						  Tree* dst = hDsts->at(j);
+                      // TODO smartly prallelize these loops
+                      // suggestion: each task produces pairs to be linked. in the end, these sets of pairs are collected and by a single thread added to the mapping store.
+                      for (unsigned i = 0; i < hSrcs->size(); i++) {
+                          for (unsigned j = 0; j < hDsts->size(); j++) {
+                              Tree* src = hSrcs->at(i);
+                              Tree* dst = hDsts->at(j);
 
-                    if (src->isClone(dst)) {
-                        multiMappings.link(src, dst);
-                        srcMarks[i] = true;
-                        dstMarks[j] = true;
+                              if (src->isClone(dst)) {
+                                  multiMappings.link(src, dst);
+                                  srcMarks[i] = true;
+                                  dstMarks[j] = true;
+                                }
+                            }
+                        }
+
+                      for (unsigned i = 0; i < srcMarks.size(); i++)
+                        if (srcMarks[i] == false)
+                          srcs.open(hSrcs->at(i));
+                      for (unsigned j = 0; j < dstMarks.size(); j++)
+                        if (dstMarks[j] == false)
+                          dsts.open(hDsts->at(j));
+                      srcs.updateHeight();
+                      dsts.updateHeight();
                     }
-                }
-            }
 
-            for (unsigned i = 0; i < srcMarks.size(); i++)
-                if (srcMarks[i] == false)
-						  srcs.open(hSrcs->at(i));
-            for (unsigned j = 0; j < dstMarks.size(); j++)
-                if (dstMarks[j] == false)
-						  dsts.open(hDsts->at(j));
-            srcs.updateHeight();
-            dsts.updateHeight();
-        }
-
-        filterMappings(multiMappings);
+                  filterMappings(multiMappings);
 }
 
 double SubTreeMatcher::sim(Tree* src, Tree* dst)
