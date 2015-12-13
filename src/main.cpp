@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <omp.h>
+#include <gperftools/profiler.h>
 #include "tree.h"
 #include "fileparser.h"
 #include "classicgumtree.h"
@@ -92,9 +93,11 @@ int main(int argc, char* argv[])
 		if (file0[0] != '-' && file1[0] != '-') {
 			auto t0 = FileParser::parse(file0);
 			auto t1 = FileParser::parse(file1);
+//			ProfilerStart("/home/guenatb/profile.prof");
 			MappingStore mapping;
 			ClassicGumtree matcher(t0, t1, &mapping);
 			matcher.match();
+//			ProfilerStop();
 			ofstream outputFile(file1 + "_parallel.mtch");
 			for (auto m : mapping.asSet()) {
 				//cout << m.first->lineNumber() << " -> " << m.second->lineNumber() << endl;

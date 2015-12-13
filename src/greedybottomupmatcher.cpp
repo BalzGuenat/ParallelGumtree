@@ -1,11 +1,14 @@
 #include <vector>
 #include <set>
 #include <utility>
+#include <iostream>
 
 #include "greedybottomupmatcher.h"
 #include "treemap.h"
 
 const double GreedyBottomUpMatcher::SIM_THRESHOLD = 0.5;
+
+const unsigned MIN_CANDIDATES_SIZE_FOR_PARALLEL = 8;
 
 void GreedyBottomUpMatcher::match() {
 	_srcIds = TreeMap(_src);
@@ -19,17 +22,28 @@ void GreedyBottomUpMatcher::match() {
 		} else if (!(t->isMatched() || t->isLeaf())) {
 			auto candidates = getDstCandidates(t);
 			pair<double,Tree*> maxPair = make_pair(-1.0, nullptr);
+			unsigned candidatesSize = candidates.size();
 
-			#pragma omp declare reduction(pair_max : pair<double, Tree*> : \
-				omp_out = max(omp_in, omp_out)) \
-				initializer(omp_priv=make_pair(-1.0, nullptr))
+			if (candidatesSize > MIN_CANDIDATES_SIZE_FOR_PARALLEL) {
+				#pragma omp declare reduction(pair_max : pair<double, Tree*> : \
+					omp_out = max(omp_in, omp_out)) \
+					initializer(omp_priv=make_pair(-1.0, nullptr))
 
-			#pragma omp parallel for reduction(pair_max:maxPair)
-			for (unsigned i = 0; i < candidates.size(); ++i) {
-				auto c = candidates[i];
-				double sim = jaccardSimilarity(t, c);
-				if (sim > maxPair.first && sim >= SIM_THRESHOLD) {
-					maxPair = make_pair(sim, c);
+				#pragma omp parallel for reduction(pair_max:maxPair)
+				for (unsigned i = 0; i < candidatesSize; ++i) {
+					auto c = candidates[i];
+					double sim = jaccardSimilarity(t, c);
+					if (sim > maxPair.first && sim >= SIM_THRESHOLD) {
+						maxPair = make_pair(sim, c);
+					}
+				}
+			} else {
+				for (unsigned i = 0; i < candidatesSize; ++i) {
+					auto c = candidates[i];
+					double sim = jaccardSimilarity(t, c);
+					if (sim > maxPair.first && sim >= SIM_THRESHOLD) {
+						maxPair = make_pair(sim, c);
+					}
 				}
 			}
 
