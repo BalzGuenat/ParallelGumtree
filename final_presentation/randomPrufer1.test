@@ -1,0 +1,23 @@
+1:label0
+ 3:label1
+ 2:label2
+  1:label2
+   2:label0
+   0:label1
+   3:label3
+ 0:label3
+  3:label1
+   3:label0
+   2:label2
+ 4:label3
+  0:label0
+  3:label1
+   4:label2
+  3:label4
+ 4:label3
+  0:label0
+  3:label1
+   4:label2
+  3:label4
+ 0:label0
+  3:label1
