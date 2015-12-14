@@ -55,29 +55,35 @@ vector<string> Tree::subTreeToStringVector() const {
   return strings;
 }
 
+const unsigned SUBTREE_SIZE_CUTOFF = 1 << 4;
+
 bool Tree::isClone(Tree *other) const {
 	bool alltrue = true;
-	auto thisref = this;
-	#pragma omp parallel shared(alltrue, thisref)
-	{
-		#pragma omp single
-		{
-			if (thisref->_type != other->_type ||
-				 thisref->_label.compare(other->_label) != 0 ||
-				 thisref->_children.size() != other->_children.size())
-				alltrue = false;
-			else {
-				for (unsigned i = 0; i < thisref->_children.size(); ++i) {
-					#pragma omp task firstprivate(i) shared(alltrue, thisref)
+		if (_type != other->_type ||
+			 _label.compare(other->_label) != 0 ||
+			 _children.size() != other->_children.size())
+			alltrue = false;
+		else {
+			if (size() > SUBTREE_SIZE_CUTOFF) {
+				for (unsigned i = 0; i < _children.size(); ++i) {
+					auto thisChild = _children[i];
+					auto otherChild = other->_children[i];
+					#pragma omp task firstprivate(thisChild, otherChild) shared(alltrue)
 					{
-						if (!(thisref->_children[i]->isClone(other->_children[i])))
+						if (!thisChild->isClone(otherChild))
 							alltrue = false;
 					}
 				}
 				#pragma omp taskwait
+			} else {
+				for (unsigned i = 0; i < _children.size(); ++i) {
+					if (!(_children[i]->isClone(other->_children[i]))) {
+						alltrue = false;
+						break;
+					}
+				}
 			}
 		}
-	}
 	return alltrue;
 }
 
