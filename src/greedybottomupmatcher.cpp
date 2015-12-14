@@ -8,7 +8,7 @@
 
 const double GreedyBottomUpMatcher::SIM_THRESHOLD = 0.5;
 
-const unsigned MIN_CANDIDATES_SIZE_FOR_PARALLEL = 8;
+const unsigned MIN_CANDIDATES_SIZE_FOR_PARALLEL = 1 << 1;
 
 void GreedyBottomUpMatcher::match() {
 	_srcIds = TreeMap(_src);
@@ -83,8 +83,8 @@ vector<Tree*> GreedyBottomUpMatcher::getDstCandidates(Tree* src) {
 void GreedyBottomUpMatcher::lastChanceMatch(Tree* src, Tree* dst) {
 	// not properly implemented because we have no ZsMatcher.
 
-	for (auto t : src->get_trees())
+	for (auto t : src->preOrder())
 		t->set_matched();
-	for (auto t : dst->get_trees())
+	for (auto t : dst->preOrder())
 		t->set_matched();
 }

@@ -14,11 +14,12 @@ void Matcher::add_mapping(Tree* src, Tree* dst)
 
 void Matcher::add_full_mapping(Tree* src, Tree* dst)
 {
-	auto csrcs = src->get_trees();
-	auto cdsts = dst->get_trees();
-	for(unsigned int i = 0; i < csrcs.size(); i++)
-	{
-		add_mapping(csrcs[i], cdsts[i]);
+	auto csrc = src->preOrder().begin();
+	auto cdst = dst->preOrder().begin();
+	while (csrc != src->preOrder().end()) {
+		add_mapping(*csrc, *cdst);
+		++csrc;
+		++cdst;
 	}
 }
 
@@ -40,11 +41,11 @@ double Matcher::jaccardSimilarity(Tree* src, Tree* dst) {
 }
 
 int Matcher::numberOfCommonDescendants(Tree* src, Tree* dst) {
-	auto dstDescList = dst->descendants();
-	set<Tree*> dstDesc(dstDescList.begin(), dstDescList.end());
+	auto dstDescIt = ++dst->preOrder().begin();
+	set<Tree*> dstDesc(dstDescIt, dst->preOrder().end());
 	int common = 0;
-	for (auto srcDesc : src->descendants()) {
-		Tree* matchedTree = _mappings->get_dst(srcDesc);
+	for (auto srcDescIt = ++src->preOrder().begin(); srcDescIt != src->preOrder().end(); ++srcDescIt) {
+		Tree* matchedTree = _mappings->get_dst(*srcDescIt);
 		if (matchedTree && (dstDesc.find(matchedTree) != dstDesc.end()))
 			++common;
 	}

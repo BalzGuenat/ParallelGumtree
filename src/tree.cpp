@@ -65,13 +65,20 @@ bool Tree::isClone(Tree *other) const {
 			alltrue = false;
 		else {
 			if (size() > SUBTREE_SIZE_CUTOFF) {
-				for (unsigned i = 0; i < _children.size(); ++i) {
-					auto thisChild = _children[i];
-					auto otherChild = other->_children[i];
-					#pragma omp task firstprivate(thisChild, otherChild) shared(alltrue)
+#pragma omp parallel default(shared)
+				{
+#pragma omp single
 					{
-						if (!thisChild->isClone(otherChild))
-							alltrue = false;
+						for (unsigned i = 0; i < _children.size(); ++i) {
+							auto thisChild = _children[i];
+							auto otherChild = other->_children[i];
+#pragma omp task firstprivate(thisChild, otherChild) shared(alltrue)
+							{
+								if (!thisChild->isClone(otherChild))
+									alltrue = false;
+							}
+
+						}
 					}
 				}
 				#pragma omp taskwait
@@ -209,5 +216,53 @@ Tree::PostOrderStruct::PostOrderIterator::operator ++() {
 			push(*it);
 	}
 
+	return *this;
+}
+
+Tree::PreOrderStruct::PreOrderStruct(Tree *root)
+	: _root(root) {}
+
+Tree::PreOrderStruct::PreOrderIterator Tree::PreOrderStruct::begin() {
+	return PreOrderIterator(_root);
+}
+
+Tree::PreOrderStruct::PreOrderIterator Tree::PreOrderStruct::END =
+		Tree::PreOrderStruct::PreOrderIterator(nullptr);
+
+Tree::PreOrderStruct::PreOrderIterator Tree::PreOrderStruct::end() {
+	return PreOrderStruct::END;
+}
+
+bool Tree::PreOrderStruct::PreOrderIterator::operator==(const PreOrderIterator& other) {
+	Tree* myPtr = **this;
+	Tree* otherPtr = *other;
+	return myPtr == otherPtr;
+}
+
+bool Tree::PreOrderStruct::PreOrderIterator::operator!=(const PreOrderIterator& other) {
+	return !(*this == other);
+}
+
+Tree* Tree::PreOrderStruct::PreOrderIterator::operator*() const {
+	if (_stack.empty())
+		return nullptr;
+	return _stack.top().first;
+}
+
+Tree::PreOrderStruct::PreOrderIterator::PreOrderIterator(Tree *tree) {
+	if (tree) {
+		auto new_top = make_pair(tree, tree->children().cbegin());
+		_stack.push(new_top);
+	}
+}
+
+Tree::PreOrderStruct::PreOrderIterator&
+Tree::PreOrderStruct::PreOrderIterator::operator ++() {
+	while (_stack.size() > 0 && _stack.top().second == _stack.top().first->children().cend())
+		_stack.pop();
+	if (_stack.size() > 0) {
+		Tree* new_top = *(_stack.top().second++);
+		_stack.push(make_pair(new_top, new_top->children().cbegin()));
+	}
 	return *this;
 }

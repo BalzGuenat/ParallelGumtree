@@ -40,6 +40,26 @@ public:
 		  PostOrderIterator end();
   };
 
+  struct PreOrderStruct {
+	  private:
+		  Tree* _root;
+	  public:
+		  PreOrderStruct(Tree* root);
+		  class PreOrderIterator : public iterator<input_iterator_tag, Tree*> {
+			  private:
+				  stack<pair<Tree*,vector<Tree*>::const_iterator>> _stack;
+			  public:
+				  PreOrderIterator(Tree* tree);
+				  PreOrderIterator& operator++();
+				  bool operator==(const PreOrderIterator& other);
+				  bool operator!=(const PreOrderIterator& other);
+				  Tree* operator*() const;
+		  };
+		  static PreOrderIterator END;
+		  PreOrderIterator begin();
+		  PreOrderIterator end();
+  };
+
   int type() const;
   int lineNumber() const;
   string label() const;
@@ -70,6 +90,7 @@ public:
   vector<Tree*> descendants();
 
   vector<Tree*> get_trees();
+  PreOrderStruct preOrder();
   PostOrderStruct postOrder();
   void set_matched(bool isMatched = true);
 
@@ -111,6 +132,7 @@ inline void Tree::set_size(unsigned size) { _size = size; }
 inline void Tree::set_height(unsigned height) { _height = height; }
 inline void Tree::set_depth(unsigned depth) { _depth = depth; }
 inline Tree::PostOrderStruct Tree::postOrder() { return PostOrderStruct(this); }
+inline Tree::PreOrderStruct Tree::preOrder() { return PreOrderStruct(this); }
 inline unsigned Tree::size() const { return _size; }
 
 #endif // TREE_H

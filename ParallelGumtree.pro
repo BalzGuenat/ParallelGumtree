@@ -4,6 +4,8 @@ CONFIG -= app_bundle
 CONFIG -= qt
 CONFIG += c++11
 
+LIBS += -lprofiler
+
 QMAKE_CXXFLAGS += -fopenmp
 QMAKE_LFLAGS +=  -fopenmp
 
