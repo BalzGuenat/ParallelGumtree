@@ -59,12 +59,41 @@ Tree* TreeCreator::seq2Tree(unsigned nodeNumber){
   return nodes[ptr];
 }
 
+Tree* TreeCreator::myTreeGen(unsigned nodeNumber) {
+	const double DOWN_CHANCE = 0.25;
+	const double SIBLING_CHANCE = DOWN_CHANCE + 0.5;
+	const double UP_CHANCE = SIBLING_CHANCE + 0.25;
+	stack<Tree*> parents({new Tree(rNumber(), nextLabel(), 0)});
+	while (label_counter < nodeNumber) {
+		double dice = ((double) (rand() % 100)) / 100;
+		auto newTree = new Tree(rNumber(), nextLabel(), 0);
+
+		if (dice < DOWN_CHANCE || parents.size() == 1) {
+			newTree->_parent = parents.top();
+			parents.top()->_children.push_back(newTree);
+			parents.push(newTree);
+		} else if (dice < SIBLING_CHANCE || parents.size() == 2) {
+			parents.pop();
+			newTree->_parent = parents.top();
+			parents.top()->_children.push_back(newTree);
+			parents.push(newTree);
+		} else if (dice < UP_CHANCE) {
+			parents.pop();
+			parents.pop();
+		}
+	}
+	while (parents.size() > 1)
+		parents.pop();
+	return parents.top();
+}
+
 
 void TreeCreator::pruferTrees(unsigned nodeNumber, string filepath) {
   srand (time(NULL));
   unsigned initNodeNumber = nodeNumber/5;
   initNodeNumber = initNodeNumber > 2 ? initNodeNumber : 3;
-  Tree* root1 = seq2Tree(initNodeNumber);
+//  Tree* root1 = seq2Tree(initNodeNumber);
+  Tree* root1 = myTreeGen(initNodeNumber);
   Tree* root2 = modifyTreeRandom(initNodeNumber, nodeNumber, root1);
   FileWriter::write(root1, filepath+"1");
   FileWriter::write(root2, filepath+"2");
@@ -228,23 +257,23 @@ Tree* TreeCreator::modifyTreeRandom(unsigned initNodeNumber, unsigned targetNode
 
     // tall or bushy?
     unsigned sum = 0;
-    unsigned non_leaves = nodes1.size();
-    for (auto &it : nodes1) {
-        if (it->isLeaf())
-            non_leaves--;
-        else
-            sum+=it->children().size();
+	 unsigned non_leaves = 0;
+	 for (auto t : nodes1) {
+		  if (!t->isLeaf()) {
+				sum += t->children().size();
+				++non_leaves;
+		  }
     }
-    cout << "average children number of file1: " << (float)sum/(float)non_leaves << endl;
-    sum = 0;
-    non_leaves = nodes2.size();
-    for (auto &it : nodes2) {
-        if (it->isLeaf())
-            non_leaves--;
-        else
-            sum+=it->children().size();
-    }
-    cout << "average children number of file2: " << (float)sum/(float)non_leaves << endl;
+	 cout << "average children number of file1: " << (double)sum/(double)non_leaves << endl;
+	 sum = 0;
+	 non_leaves = 0;
+	 for (auto t : nodes2) {
+		  if (!t->isLeaf()) {
+				sum += t->children().size();
+				++non_leaves;
+		  }
+	 }
+	 cout << "average children number of file2: " << (double)sum/(double)non_leaves << endl;
 
 
     return root2;

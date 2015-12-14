@@ -10,6 +10,9 @@ class TreeCreator
 public:
   static void pruferTrees(unsigned nodeNumber, string filepath);
 private:
+
+  static Tree* myTreeGen(unsigned nodeNumber);
+
   static Tree* seq2Tree(unsigned nodeNumber);
   static Tree* modifyTreeRandom(unsigned initNodeNumber, unsigned targetNodeNumber, Tree* root);
   static void addNodes(Tree* root, vector<Tree*> &nodes);
@@ -19,13 +22,13 @@ private:
 
 
   // "Settings"
-  static const unsigned maxTypes = 5;
+  static const unsigned maxTypes = 25;
 
 };
 
 inline int TreeCreator::rNumber() { return rand() % TreeCreator::maxTypes;}
 inline string TreeCreator::nextLabel() {
-  return "Label " + (std::to_string(label_counter++));
+  return "label" + to_string(label_counter++);
 }
 
 #endif // TREECREATOR_H
