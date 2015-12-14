@@ -15,6 +15,7 @@ private:
 public:
     MappingStore(set<Mapping>);
     MappingStore();
+	 unsigned size() const;
     set<Mapping> asSet();
     MappingStore copy();
     void link(Tree *src, Tree *dst);
@@ -29,4 +30,7 @@ public:
 	 unordered_map<Tree*, Tree*>::iterator begin();
 	 unordered_map<Tree*, Tree*>::iterator end();
 };
+
+inline unsigned MappingStore::size() const { return srcs.size(); }
+
 #endif // MAPPING_STORE
