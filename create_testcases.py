@@ -12,10 +12,10 @@ if not os.path.exists('test_cases'):
 linecount_file = open('test_cases/linecount', 'w+')
 linecount_file.seek(0)
 linecount_file.truncate()
-for i in range(0, 8): # create the test case files and write the linecount
+for i in range(0, 10): # create the test case files and write the linecount
 	filename1 = 'test_cases/tree_' + str(i) + '_1.test'
 	filename2 = 'test_cases/tree_' + str(i) + '_2.test'
-	subprocess.call(['./ParallelGumtree', '-create', str((i+1) * 4000)])
+	subprocess.call(['./ParallelGumtree', '-create', str(2 ** (10 + i))])
 	
 	# move the files
 	os.rename("randomPrufer1", filename1)
