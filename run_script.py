@@ -8,9 +8,9 @@ import os
 import filecmp
 
 sizes = 8 #go up to 8 for larger tests
-runs = 1 # 4
+runs = 4 # 4
 max_threads_log = 3
-runJava = False
+runJava = True
 
 # empty the average linecount file
 with open('test_cases/linecount') as file:
@@ -24,10 +24,10 @@ average_linecount = np.array(average_linecount)
 parallelGumtreeTimes = np.empty([max_threads_log, runs, sizes])
 referenceGumtreeTimes = np.empty([runs, sizes])
 for i in range(0,sizes):
-	filename1 = 'test_cases/tree_' + str(i) + '_1.test'
-	filename2 = 'test_cases/tree_' + str(i) + '_2.test'
-
+	dirName = 'test_cases/size_' + str(i)
 	for r in range(0,runs):
+		filename1 = dirName + '/tree_' + str(r) + '_1.test'
+		filename2 = dirName + '/tree_' + str(r) + '_2.test'
 		for num_threads in range(0,max_threads_log):
 			# run and time the parallel Gumtree
 			print('ParallelGumtree, run ' + str(r+1) + ' on file ' + str(i) + ' with ' + str(2**num_threads) + ' threads')
@@ -64,9 +64,11 @@ if runJava:
 	print referenceGumtreeTimes
 fig, ax = plt.subplots()
 parallel_average_times = np.empty([max_threads_log, sizes])
+parallel_standard_deviation = np.empty([max_threads_log, sizes])
 for t in range(0,max_threads_log):
 	parallel_average_times[t] = parallelGumtreeTimes[t].mean(axis=0)
-	ax.plot(average_linecount, parallel_average_times[t], marker='o')
+	parallel_standard_deviation[t] = parallelGumtreeTimes[t].std(axis=0)
+	ax.errorbar(average_linecount, parallel_average_times[t], parallel_standard_deviation[t], marker='o')
 if runJava:
 	reference_average_times = referenceGumtreeTimes.mean(axis=0)
 	ax.plot(average_linecount, reference_average_times, marker='o')
