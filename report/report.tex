@@ -1,0 +1,286 @@
+% IEEE standard conference template; to be used with:
+%   spconf.sty  - LaTeX style file, and
+%   IEEEbib.bst - IEEE bibliography style file.
+% --------------------------------------------------------------------------
+
+\documentclass[letterpaper]{article}
+\usepackage{spconf,amsmath,amssymb,graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[linesnumbered, ruled]{algorithm2e}
+
+% Example definitions.
+% --------------------
+% nice symbols for real and complex numbers
+\newcommand{\R}[0]{\mathbb{R}}
+\newcommand{\C}[0]{\mathbb{C}}
+
+% bold paragraph titles
+\newcommand{\mypar}[1]{{\bf #1.}}
+
+% Title.
+% ------
+\title{A parallel implementation of the Gumtree Algorithm in C++}
+%
+% Single address.
+% ---------------
+\name{Balz Guenat, Christopher Signer, Amirreza Bahreini} 
+\address{Department of Computer Science\\ ETH Zürich\\Zürich, Switzerland}
+
+% For example:
+% ------------
+%\address{School\\
+%		 Department\\
+%		 Address}
+%
+% Two addresses (uncomment and modify for two-address case).
+% ----------------------------------------------------------
+%\twoauthors
+%  {A. Author-one, B. Author-two\sthanks{Thanks to XYZ agency for funding.}}
+%		 {School A-B\\
+%		 Department A-B\\
+%		 Address A-B}
+%  {C. Author-three, D. Author-four\sthanks{The fourth author performed the work
+%		 while at ...}}
+%		 {School C-D\\
+%		 Department C-D\\
+%		 Address C-D}
+%
+
+\begin{document}
+%\ninept
+%
+\maketitle
+%
+
+\begin{abstract}
+TODO Describe in concise words what you do, why you do it (not necessarily
+in this order), and the main result.  The abstract has to be
+self-contained and readable for a person in the general area. You
+should write the abstract last.
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+
+%In this section we explain the problem the \emph{Gumtree} algorithm attempts to solve and state the goal of our work.
+
+Software projects evolve over the time of their development and operation.
+Nowadays the history of such evolution is typically recorded by a version control system (VCS) which stores snapshots of the project state.
+For the developers to understand this evolution, it is of tremendous help if not only these snapshots are available but also a representation of the transition from one state the other.
+Often these transitions are represented in form of differences between the files or edit operations transforming the old into the new file.
+The transitions are usually not stored explicitly but are computed from the two states at the user's request.
+Algorithms performing this computation are called diff algorithms.
+Most popular diff algorithms like \emph{diff}, \emph{kdiff3} and \emph{git-diff} regard all files as lists of lines and find the differences between them by computing their longest common subsequence.
+
+This approach is simple and fast but it is often too coarse grained and lacks conciseness.
+Consider for example the definition of a Java method that is moved from the top of a file to the bottom of the same file.
+\emph{git-diff} will regard this as a deletion of multiple lines at the top of the file and an unrelated addition of multiple lines at the bottom.
+
+The \emph{Gumtree} algorithm introduced by Falleri et al. \cite{falleri:2014:structure_diff} is a valid attempt at overcoming these issues by leveraging the structure inherent in program code.
+Instead of regarding files as lists of lines, the code is parsed to yield an abstract syntax tree (AST).
+Then, in a step analogous to finding the longest common subsequence of lists, a matching between the two versions of the AST is computed and finally a description of edit operations is generated.
+The main contribution of the \emph{Gumtree} algorithm is a way to find said matching.
+Using this structure-aware approach, the example from before will be represented as a single move operation of the AST node representing the method definition.
+
+The disadvantages of this approach are twofold.
+Firstly, it requires the integration of a parser for the respective language to generate the AST.
+Secondly, parsing and subsequently finding a matching between the ASTs is much more computationally involved and thus takes a longer time.
+The existing implementation written in Java \footnote{github.com/GumTreeDiff/gumtree} defers the generation of the AST to an external component but the matching itself is computed in a purely singlethreaded manner.
+In an attempt to alleviate the latter disadvantage, we have in a first step implemented the \emph{Gumtree} algorithm in C++ and in a second step tried to parallelize it where possible.
+We will use the existing Java implementation as a reference both in terms of correctness as well as performance.
+
+TODO: Describe what we did and what the results were.
+
+\section{Background: The original Gumtree algorithm in Detail}\label{sec:background}
+
+This section describes the original \emph{Gumtree} algorithm as it was introduced in sections 2 and 3 in the Falleri paper \cite{falleri:2014:structure_diff}.
+
+\mypar{Problem definition}
+The \emph{Gumtree} algorithm regards ASTs as ordered rooted trees where nodes have a type and may have a string value associated to them.
+%It was designed specifically with ASTs in mind but can be applied to any type of tree with these properties.
+Given two such trees, the algorithm produces a matching between the nodes of the two trees.
+A matching is represented as a set of pairs of nodes where each node is part of at most one pair and nodes belonging to the same pair have the same type.
+
+\mypar{Algorithm overview}
+The algorithm computes such a matching in two successive phases:
+\begin{enumerate}
+	\item The top-down phase in which isomorphic subtrees are found and matched.
+	\item The bottom-up phase in which nodes are matched if many of their descendants have already been matched.
+\end{enumerate}
+The Falleri paper additionally describes the search for so-called \emph{recovery mappings} in the second phase.
+We omit this step as it requires the implementation of a separate optimal algorithm which we deemed out of scope for this project.
+For the purpose of comparing our implementation to the reference, we have modified the original implementation to omit this step as well.
+
+\mypar{Top-down phase}
+
+This phase uses a height-indexed priority list of subtrees (represented by their respective root nodes) for each tree supporting the following operations: \emph{peekMax} returns the maximum subtree height in the list. \emph{pop} returns the set of subtrees with maximum height and removes them from the list. \emph{push} inserts a subtree into the list. \emph{open} inserts all children of a node into the list.
+
+Further we define a similarity function $sim$ on subtrees given a mapping $M$ as follows:
+$$ sim(t_1, t_2, M) = \frac{| \{ t_x \in d(t_1), t_y \in d(t_2) : (t_x, t_y) \in M \} | }{ (|d(t_1)| + |d(t_2)|) / 2} $$
+where $d(t)$ is the set of descendants of $t$. $sim$ rates the similarity of two subtrees in the range $[0,1]$ where a value of 1 indicates that the two nodes have the same descendants.
+When a given node can be matched to multiple nodes we use this similarity measure on the parents of the candidates to decide between them. See Algorithm \ref{alg:top-down} for a full description of the top-down phase.
+
+\SetKw{KwOr}{or}
+\SetAlFnt{\footnotesize}
+\SetInd{0.3em}{0.6em}
+\SetAlgoVlined
+
+\begin{algorithm}
+	\KwData{Two trees $T_1, T_2$, a minimum height $minHeight$, two empty height-indexed priority lists $L_1, L_2$, an empty list of candidate mappings $A$, and an empty set of mappings $M$}
+	\KwResult{The set of mappings $M$}
+	push(root($T_1$), $L_1$)\;
+	push(root($T_2$), $L_2$)\;
+	\While{$ min(peekMax(L_1),peekMax(L_2)) > minHeight $}{
+		\eIf{$ peekMax(L_1) \neq peekMax(L_2) $}{
+			\eIf{$ peekMax(L_1) > peekMax(L_2) $}{
+				\lForEach{$ t \in pop(L_1) $}{
+					$open(t,L_1)$
+					}
+				}{
+				\lForEach{$ t \in pop(L_2) $}{
+					$open(t,L_2)$
+					}
+				}
+		}{
+			$H_1 \gets pop(L_1)$\;
+			$H_2 \gets pop(L_2)$\;
+			\ForEach{$ (t_1,t_2) \in H_1 \times H_2 $}{
+				\If{$ \text{isomorphic}(t_1,t_2) $}{
+					\eIf{$ \exists t_y \in T_2 : \text{isomorphic}(t_1,t_y) \wedge t_y \neq t_2 $\\ \KwOr $ \exists t_x \in T_1 : \text{isomorphic}(t_x,t_2) \wedge t_x \neq t_1 $\\}{
+						add($A, (t_1,t_2)$)\;
+					}{
+						add all pairs of isomorphic nodes of $s(t_1)$ and $s(t_2)$ to $M$\;
+					}
+				}{
+				}
+			}
+			\lForEach{$ t_1 \in H_1 : (t_1,t_y) \notin A \cup M $}{$ \text{open}(t_1,L_1) $}
+			\lForEach{$ t_2 \in H_2 : (t_x,t_2) \notin A \cup M $}{$ \text{open}(t_2,L_2) $}
+		}
+	}
+	sort $(t_1,t_2) \in A$ using $sim(parent(t_1),parent(t_2), M)$\;
+	\While{$\text{size}(A) > 0$}{
+		$(t_1,t_2) \gets \text{popLargest}(A)$\;
+		add all pairs of isomorphic nodes of $s(t_1)$ and $s(t_2)$ to $M$\;
+		$A \gets A \setminus \{(t_1,t_y) \in A\}$\;
+		$A \gets A \setminus \{(t_x,t_2) \in A\}$\;
+	}
+\caption{The top-down phase (taken from \cite{falleri:2014:structure_diff})}
+\label{alg:top-down}
+\end{algorithm}
+
+\section{Parallelizing the implementation}\label{sec:yourmethod}
+
+TODO: Section intro
+
+\mypar{Finding potential for parallel execution}
+
+TODO: Explain where we saw potential for parallelization and why some parts are not (easily) parallelizable.
+
+\mypar{Chosen implementation}
+
+TODO: Explain how we used OpenMP, specifically tasks and for loops. Mention cutoff threshholds and any other details.
+
+\section{Experimental Results}\label{sec:exp}
+
+Here you evaluate your work using experiments. You start again with a
+very short summary of the section. The typical structure follows.
+
+\mypar{Experimental setup} Specify the platform (processor, frequency, maybe OS, maybe cache sizes)
+as well as the compiler, version, and flags used. If your work is about performance, 
+I strongly recommend that you play with optimization flags and consider also icc for additional potential speedup.
+
+Then explain what kind of benchmarks you ran. The idea is to give enough information so the experiments are reproducible by somebody else on his or her code.
+For sorting you would talk about the input sizes. For a tool that performs NUMA optimization, you would specify the programs you ran.
+
+\mypar{Results}
+Next divide the experiments into classes, one paragraph for each. In each class of experiments you typically pursue one questions that then is answered by a suitable plot or plots. For example, first you may want to investigate the performance behavior with changing input size, then how your code compares to external benchmarks.
+
+For some tips on benchmarking including how to create a decent viewgraph see pages 22--27 in \cite{Pueschel:10}.
+
+{\bf Comments:}
+\begin{itemize}
+\item Create very readable, attractive plots (do 1 column, not 2 column plots
+for this report) with readable font size. However, the font size should also not be too large; typically it is smaller than the text font size.
+An example is in Fig.~\ref{fftperf} (of course you can have a different style).
+\item Every plot answers a question. You state this question and extract the
+answer from the plot in its discussion.
+\item Every plot should be referenced and discussed.
+\end{itemize}
+
+\begin{figure}\centering
+  \caption{Performance of four single precision implementations of the
+  discrete Fourier transform. The operations count is roughly the
+  same. The labels in this plot are maybe a little bit too small.\label{fftperf}}
+\end{figure}
+
+\section{Conclusions}
+
+Here you need to summarize what you did and why this is
+important. {\em Do not take the abstract} and put it in the past
+tense. Remember, now the reader has (hopefully) read the report, so it
+is a very different situation from the abstract. Try to highlight
+important results and say the things you really want to get across
+such as high-level statements (e.g., we believe that .... is the right
+approach to .... Even though we only considered x, the
+.... technique should be applicable ....) You can also formulate next
+steps if you want. Be brief. After the conclusions there are only the references.
+
+\section{Further comments}
+
+Here we provide some further tips.
+
+\mypar{Further general guidelines}
+
+\begin{itemize}
+\item For short papers, to save space, I use paragraph titles instead of
+subsections, as shown in the introduction.
+
+\item It is generally a good idea to break sections into such smaller
+units for readability and since it helps you to (visually) structure the story.
+
+\item The above section titles should be adapted to more precisely
+reflect what you do.
+
+\item Each section should be started with a very
+short summary of what the reader can expect in this section. Nothing
+more awkward as when the story starts and one does not know what the
+direction is or the goal.
+
+\item Make sure you define every acronym you use, no matter how
+convinced you are the reader knows it.
+
+\item Always spell-check before you submit (to us in this case).
+
+\item Be picky. When writing a paper you should always strive for very
+high quality. Many people may read it and the quality makes a big difference.
+In this class, the quality is part of the grade.
+
+\item Books helping you to write better: \cite{Higham:98} and \cite{Strunk:00}.
+
+\item Conversion to pdf (latex users only): 
+
+dvips -o conference.ps -t letter -Ppdf -G0 conference.dvi
+
+and then
+
+ps2pdf conference.ps
+\end{itemize}
+
+\mypar{Graphics} For plots that are not images {\em never} generate the bitmap formats
+jpeg, gif, bmp, tif. Use eps, which means encapsulate postscript. It is
+scalable since it is a vector graphic description of your graph. E.g.,
+from Matlab, you can export to eps.
+
+The format pdf is also fine for plots (you need pdflatex then), but only if the plot was never before in the format 
+jpeg, gif, bmp, tif.
+
+
+% References should be produced using the bibtex program from suitable
+% BiBTeX files (here: bibl_conf). The IEEEbib.bst bibliography
+% style file from IEEE produces unsorted bibliography list.
+% -------------------------------------------------------------------------
+\bibliographystyle{IEEEbib}
+\bibliography{bibl_conf}
+
+\end{document}
+
