@@ -66,11 +66,10 @@ double SubTreeMatcher::sim(Tree* src, Tree* dst)
   int maxSrcPos =  (src->isRoot()) ? 1 : src->parent()->children().size();
   int maxDstPos =  (dst->isRoot()) ? 1 : dst->parent()->children().size();
   int maxPosDiff = max(maxSrcPos, maxDstPos);
-  //TODO
   double pos = 1.0 - ((double) abs(posSrc - posDst) / (double) maxPosDiff);
-  // We don't have numbering yet so don't use po for now. It's only a small factor anyways.
-  //double po = 1.0 - ((double) abs(src->id() - dst.getId()) / (double) this.getMaxTreeSize());
-  return 100 * jaccard + 10 * pos/* + po*/;
+  double po = 1.0 - ((double) abs(src->id() - dst->id()) /
+							(double) getMaxTreeSize());
+  return 100 * jaccard + 10 * pos + po;
 }
 
 int SubTreeMatcher::PriorityTreeList::peekHeight() {

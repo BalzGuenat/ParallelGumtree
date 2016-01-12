@@ -1,10 +1,11 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <algorithm>
+#include <iostream>
 
 #include "greedysubtreematcher.h"
 
-struct GreedySubTreeMatcher::Comparator {
+struct GreedySubTreeMatcher::SimilarityComputer {
 
 	MappingStore* mappings;
 	unsigned maxTreeSize;
@@ -17,7 +18,7 @@ struct GreedySubTreeMatcher::Comparator {
 		return simMap[i] < simMap[j];
   }
 
-  Comparator(vector<Mapping*> mappings, MappingStore* mappingStore, unsigned maxTreeSize)
+  SimilarityComputer(vector<Mapping*> mappings, MappingStore* mappingStore, unsigned maxTreeSize)
 	  : mappings(mappingStore), maxTreeSize(maxTreeSize)
   {
 	 for (auto m : mappings)
@@ -68,41 +69,55 @@ struct GreedySubTreeMatcher::Comparator {
 
 };
 
+struct GreedySubTreeMatcher::Comparator {
+		unordered_map<Mapping*, double>* _simMap;
+
+		bool operator() (Mapping* i,Mapping* j)
+		{
+			 return (*_simMap)[i] < (*_simMap)[j];
+		}
+
+		Comparator(unordered_map<Mapping*, double>* simMap)
+			: _simMap(simMap) {}
+
+};
+
 GreedySubTreeMatcher::GreedySubTreeMatcher(Tree* src, Tree* dst, MappingStore* store)
 	: SubTreeMatcher(src, dst, store) {}
 
 void GreedySubTreeMatcher::filterMappings(MultiMappingStore& multiMappings) {
-        // Select unique mappings first and extract ambiguous mappings.
-		  vector<Mapping*> ambiguousList;
-        unordered_set<Tree*> ignored;
-		  for (auto src : multiMappings.getSrcs()) {
-				if (multiMappings.isSrcUnique(src))
-					 add_full_mapping(src, *multiMappings.getDst(src).begin());
-				else if (ignored.find(src) == ignored.end()) {
-					 set<Tree*> adsts = multiMappings.getDst(src);
-					 set<Tree*> asrcs = multiMappings.getSrc(*multiMappings.getDst(src).begin());
-					 for (auto asrc : asrcs)
-						  for (auto adst : adsts)
-								ambiguousList.push_back(new Mapping(asrc, adst));
-					 ignored.insert(asrcs.begin(), asrcs.end());
-            }
-        }
+	// Select unique mappings first and extract ambiguous mappings.
+	vector<Mapping*> ambiguousList;
+	unordered_set<Tree*> ignored;
+	for (auto src : multiMappings.getSrcs()) {
+		if (multiMappings.isSrcUnique(src))
+			add_full_mapping(src, *multiMappings.getDst(src).begin());
+		else if (ignored.find(src) == ignored.end()) {
+			set<Tree*> adsts = multiMappings.getDst(src);
+			set<Tree*> asrcs = multiMappings.getSrc(*multiMappings.getDst(src).begin());
+			for (auto asrc : asrcs)
+				for (auto adst : adsts)
+					ambiguousList.push_back(new Mapping(asrc, adst));
+			ignored.insert(asrcs.begin(), asrcs.end());
+		}
+	}
 
-        // Rank the mappings by score.
-        unordered_set<Tree*> srcIgnored;
-        unordered_set<Tree*> dstIgnored;
-		  sort(ambiguousList.begin(), ambiguousList.end(),
-				 Comparator(ambiguousList, _mappings, max(_src->size(), _dst->size())));
+	// Rank the mappings by score.
+	unordered_set<Tree*> srcIgnored;
+	unordered_set<Tree*> dstIgnored;
+	auto simComp = SimilarityComputer(ambiguousList, _mappings, max(_src->size(), _dst->size()));
+	Comparator comp2(&simComp.simMap);
+	sort(ambiguousList.begin(), ambiguousList.end(), comp2);
 
-        // Select the best ambiguous mappings
-        while (ambiguousList.size() > 0) {
-				auto ambiguous = ambiguousList.back();
-            ambiguousList.pop_back();
-				if (srcIgnored.find(ambiguous->first) == srcIgnored.end() &&
-					 dstIgnored.find(ambiguous->second) == dstIgnored.end()) {
-					 add_full_mapping(ambiguous->first, ambiguous->second);
-					 srcIgnored.insert(ambiguous->first);
-					 dstIgnored.insert(ambiguous->second);
-            }
-        }
+	// Select the best ambiguous mappings
+	while (ambiguousList.size() > 0) {
+		auto ambiguous = ambiguousList.back();
+		ambiguousList.pop_back();
+		if (srcIgnored.find(ambiguous->first) == srcIgnored.end() &&
+			 dstIgnored.find(ambiguous->second) == dstIgnored.end()) {
+			add_full_mapping(ambiguous->first, ambiguous->second);
+			srcIgnored.insert(ambiguous->first);
+			dstIgnored.insert(ambiguous->second);
+		}
+	}
 }

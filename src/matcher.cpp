@@ -30,13 +30,12 @@ double Matcher::chawatheSimilarity(Tree* src, Tree* dst) {
 
 double Matcher::diceSimilarity(Tree* src, Tree* dst) {
 	double c = (double) numberOfCommonDescendants(src, dst);
-	// WHAT THE ? What is 2D ?
 	return (1 * c) / ((double) src->children().size() + (double) dst->children().size());
 }
 
 double Matcher::jaccardSimilarity(Tree* src, Tree* dst) {
 	double num = (double) numberOfCommonDescendants(src, dst);
-	double den = (double) src->children().size() + (double) dst->children().size() - num;
+	double den = (double) src->descendants().size() + (double) dst->descendants().size() - num;
 	return num / den;
 }
 
