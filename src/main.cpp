@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 #include <omp.h>
 #include <gperftools/profiler.h>
 #include "tree.h"
@@ -98,8 +99,17 @@ int main(int argc, char* argv[])
 			ClassicGumtree matcher(t0, t1, &mapping);
 			matcher.match();
 //			ProfilerStop();
+
+			vector<pair<Tree*, Tree*>> mappingVector(mapping.begin(), mapping.end());
+			struct {
+					bool operator() (pair<Tree*, Tree*> a, pair<Tree*, Tree*> b) {
+						return a.first->lineNumber() < b.first->lineNumber();
+					}
+			} mappingComp;
+			sort(mappingVector.begin(), mappingVector.end(), mappingComp);
+
 			ofstream outputFile(file1 + "_parallel.mtch");
-			for (auto m : mapping.asSet()) {
+			for (auto m : mappingVector) {
 				//cout << m.first->lineNumber() << " -> " << m.second->lineNumber() << endl;
 				outputFile << m.first->lineNumber() << " -> " << m.second->lineNumber() << endl;
 			  }
