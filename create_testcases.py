@@ -12,15 +12,15 @@ if not os.path.exists('test_cases'):
 linecount_file = open('test_cases/linecount', 'w+')
 linecount_file.seek(0)
 linecount_file.truncate()
-for i in range(0, 10): # create the test case files and write the linecount
+for i in range(0, 7): # create the test case files and write the linecount
 	totalSize = 0
 	dirName = 'test_cases/size_' + str(i)
 	if not os.path.exists(dirName):
 		os.makedirs(dirName)
-	for j in range(0,4):
+	for j in range(0,10):
 		filename1 = dirName + '/tree_' + str(j) + '_1.test'
 		filename2 = dirName + '/tree_' + str(j) + '_2.test'
-		errcode = subprocess.call(['./ParallelGumtree', '-create', str(2 ** (10 + i))], stderr=subprocess.STDOUT)
+		errcode = subprocess.call(['./ParallelGumtree', '-create', str(2 ** (12 + i))], stderr=subprocess.STDOUT)
 		print(errcode)
 		print "finished gen"
 		

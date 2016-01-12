@@ -7,8 +7,8 @@ import numpy as np
 import os
 import filecmp
 
-sizes = 8 #go up to 8 for larger tests
-runs = 4 # 4
+sizes = 7 # max is 10
+runs = 10
 max_threads_log = 3
 runJava = True
 
@@ -65,21 +65,23 @@ if runJava:
 fig, ax = plt.subplots()
 parallel_average_times = np.empty([max_threads_log, sizes])
 parallel_standard_deviation = np.empty([max_threads_log, sizes])
+reference_standard_deviation = np.empty([max_threads_log, sizes])
 for t in range(0,max_threads_log):
 	parallel_average_times[t] = parallelGumtreeTimes[t].mean(axis=0)
 	parallel_standard_deviation[t] = parallelGumtreeTimes[t].std(axis=0)
 	ax.errorbar(average_linecount, parallel_average_times[t], parallel_standard_deviation[t], marker='o')
 if runJava:
 	reference_average_times = referenceGumtreeTimes.mean(axis=0)
-	ax.plot(average_linecount, reference_average_times, marker='o')
-ax.set_ylabel('elapsed time')
-ax.set_xlabel('input size')
-ax.set_title("input size (in average number of tree lines) vs time")
+	reference_standard_deviation = referenceGumtreeTimes.std(axis=0)
+	ax.errorbar(average_linecount, reference_average_times, reference_standard_deviation, marker='o')
+ax.set_ylabel('elapsed time [seconds]')
+ax.set_xlabel('input size [average number of nodes]')
+ax.set_title("Input tree size vs execution time")
 legend = []
 for t in range(0,max_threads_log):
-	legend.append(str(2**t) + ' thread(s)')
+	legend.append('C++, ' + str(2**t) + ' thread(s)')
 if runJava:
-	legend.append('java reference algorithm')
+	legend.append('Reference implementation')
 ax.legend(legend, loc='upper left').draggable()
 ax.set_xscale('log')
 plt.draw()
@@ -97,6 +99,7 @@ if runJava:
 	ax.set_xlabel('input size')
 	ax.set_title("speedup compared to the java solution")
 	ax.legend(legend[:-1], loc='upper right').draggable()
+	ax.set_xscale('log')
 	plt.draw()
 	plt.savefig('speedupPlot.png')
 
@@ -116,6 +119,7 @@ if max_threads_log>1:
 	ax.set_xlabel('input size')
 	ax.set_title("speedup compared to the single thread c++ solution")
 	ax.legend(legend[1:], loc='upper right').draggable()
+	ax.set_xscale('log')
 	plt.draw()
 	plt.savefig('speedupPlot_c.png')
 
