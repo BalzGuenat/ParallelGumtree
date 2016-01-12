@@ -10,7 +10,9 @@ import filecmp
 sizes = 7 # max is 10
 runs = 10
 max_threads_log = 3
-runJava = True
+runJava = False
+
+plt.rcParams.update({'font.size': '18'})
 
 # empty the average linecount file
 with open('test_cases/linecount') as file:
@@ -82,10 +84,11 @@ for t in range(0,max_threads_log):
 	legend.append('C++, ' + str(2**t) + ' thread(s)')
 if runJava:
 	legend.append('Reference implementation')
-ax.legend(legend, loc='upper left').draggable()
+ax.legend(legend, loc='upper left', prop={'size':16}).draggable()
 ax.set_xscale('log')
 plt.draw()
-plt.savefig('timePlot.png')
+plt.savefig('timePlot.png', bbox_inches='tight')
+plt.savefig('timePlot.eps', bbox_inches='tight')
 
 if runJava:
 	# speedup plots
@@ -101,27 +104,32 @@ if runJava:
 	ax.legend(legend[:-1], loc='upper right').draggable()
 	ax.set_xscale('log')
 	plt.draw()
-	plt.savefig('speedupPlot.png')
+	plt.savefig('speedupPlot.png', bbox_inches='tight')
 
 # speedup plots vs the single thread c++ solution
 if max_threads_log>1:
 	print "\nSpeedup vs single c++ thread"
+	speedup_parallel_standard_deviation = np.empty([max_threads_log, sizes])
+	average_speedup_parallel = np.empty([max_threads_log, sizes])
 	fig, ax = plt.subplots()
 	for t in range(1,max_threads_log):
-		speedup_parallel = parallel_average_times[0]/parallel_average_times[t]
-		ax.plot(average_linecount, speedup_parallel, marker='o')
+		speedup_parallel = parallelGumtreeTimes[0]/parallelGumtreeTimes[t]
+		average_speedup_parallel[t] = speedup_parallel.mean(axis=0)
+		speedup_parallel_standard_deviation[t] = speedup_parallel.std(axis=0)
+		ax.errorbar(average_linecount, average_speedup_parallel[t], speedup_parallel_standard_deviation[t], marker='o')
+		#ax.plot(average_linecount, speedup_parallel, marker='o')
 		print "average speedup with " + str(2**t) + " threads: " + str(np.mean(speedup_parallel))
 	if runJava:
 		speedup_reference = parallel_average_times[0]/reference_average_times
 		print "average speedup of the java reference solution: " + str(np.mean(speedup_reference))
 		ax.plot(average_linecount, speedup_reference, marker='o')
 	ax.set_ylabel('speedup')
-	ax.set_xlabel('input size')
-	ax.set_title("speedup compared to the single thread c++ solution")
-	ax.legend(legend[1:], loc='upper right').draggable()
+	ax.set_xlabel('input size [average number of nodes]')
+	ax.set_title("speedup with multiple threads")
+	ax.legend(legend[1:], loc='lower right').draggable()
 	ax.set_xscale('log')
 	plt.draw()
-	plt.savefig('speedupPlot_c.png')
+	plt.savefig('speedupPlot_c.png', bbox_inches='tight')
 
 # show plots
 plt.show()
