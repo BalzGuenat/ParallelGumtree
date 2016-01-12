@@ -9,6 +9,8 @@ LIBS += -lprofiler
 QMAKE_CXXFLAGS += -fopenmp
 QMAKE_LFLAGS +=  -fopenmp
 
+QMAKE_CXXFLAGS_RELEASE *= -O2
+
 SOURCES += src/main.cpp \
     src/tree.cpp \
     src/fileparser.cpp \
