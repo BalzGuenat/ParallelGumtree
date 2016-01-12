@@ -68,41 +68,32 @@ Tree* MappingStore::first_mapped_dst_parent(Tree *dst)
     }
 }
 
-Tree* MappingStore::get_dst(Tree *src){
-	try {
-		return srcs.at(src);
-	} catch (out_of_range) {
+Tree* MappingStore::get_dst(Tree *src) {
+	auto result = srcs.find(src);
+	if (result != srcs.end()) {
+		return result->second;
+	} else {
 		return nullptr;
 	}
 }
 
-Tree* MappingStore::get_src(Tree *dst)
-{
-	try {
-		return dsts.at(dst);
-	} catch (out_of_range) {
+Tree* MappingStore::get_src(Tree *dst) {
+	auto result = dsts.find(dst);
+	if (result != dsts.end()) {
+		return result->second;
+	} else {
 		return nullptr;
 	}
 }
 
 bool MappingStore::has_src(Tree *src)
 {
-  try {
-    srcs.at(src);
-    return true;
-  } catch (out_of_range) {
-      return false;
-  }
+	return srcs.find(src) != srcs.end();
 }
 
 bool MappingStore::has_dst(Tree *dst)
 {
-  try {
-    dsts.at(dst);
-    return true;
-  } catch (out_of_range) {
-      return false;
-  }
+	return dsts.find(dst) != dsts.end();
 }
 
 bool MappingStore::has(Tree *src, Tree *dst)
