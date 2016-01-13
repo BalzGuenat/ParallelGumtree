@@ -1,7 +1,7 @@
 #include "tree.h"
 
 Tree::Tree(int type, string label, int lineNumber)
-  : _type(type), _lineNumber(lineNumber), _label(label) {}
+  : _type(type), _lineNumber(lineNumber), _label(label), _parent(nullptr) {}
 
 string Tree::toString() const {
   return to_string(_type) + ':' + _label;
@@ -138,13 +138,15 @@ void Tree::compute_height() {
 }
 
 Tree* Tree::clone() {
-    // maybe implement with loop unrolling instead of recursively
-    // queue of pairs of (newParent, oldChild)?
-    Tree* newRoot = new Tree(_type, _label, _lineNumber);
-    for (unsigned i=0; i != _children.size(); i++) {
-        newRoot->_children.push_back(_children[i]->clone());
-    }
-    return newRoot;
+	auto clone = new Tree(_type, _label, _lineNumber);
+	if (!isLeaf()) {
+		for (auto child : _children) {
+			auto childClone = child->clone();
+			childClone->_parent = clone;
+			clone->_children.push_back(childClone);
+		}
+	}
+	return clone;
 }
 
 int Tree::childPosition(const Tree* child) const {
