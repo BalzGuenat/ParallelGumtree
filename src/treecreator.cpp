@@ -67,19 +67,19 @@ Tree* TreeCreator::myTreeGen(unsigned nodeNumber) {
 	stack<Tree*> parents({new Tree(rNumber(), nextLabel(), 0)});
 	while (label_counter < nodeNumber) {
 		double dice = ((double) (rand() % 100)) / 100;
-		auto newTree = new Tree(rNumber(), nextLabel(), 0);
 
 		if (dice < DOWN_CHANCE || parents.size() == 1) {
+			auto newTree = new Tree(rNumber(), nextLabel(), 0);
 			newTree->_parent = parents.top();
 			parents.top()->_children.push_back(newTree);
 			parents.push(newTree);
 		} else if (dice < SIBLING_CHANCE || parents.size() == 2) {
+			auto newTree = new Tree(rNumber(), nextLabel(), 0);
 			parents.pop();
 			newTree->_parent = parents.top();
 			parents.top()->_children.push_back(newTree);
 			parents.push(newTree);
 		} else if (dice < UP_CHANCE) {
-			parents.pop();
 			parents.pop();
 		}
 	}
