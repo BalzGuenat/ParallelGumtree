@@ -54,14 +54,13 @@
 %
 
 \begin{abstract}
-TODO Describe in concise words what you do, why you do it (not necessarily
-in this order), and the main result.  The abstract has to be
-self-contained and readable for a person in the general area. You
-should write the abstract last.
-
-The evolution of software projects is recorded with version control systems which store snapshots of the project at different points in time. To help developers understand the transitions between these snapshots, \emph{diff} programs are used to highlight the differences between them. In an effort to provide developers with a better description of these differences the \emph{Gumtree} algorithm computes a matching between the nodes of the abstract syntax trees of the two snapshots.
+%The evolution of software projects is recorded with version control systems which store snapshots of the project at different points in time. To help developers understand the transitions between these snapshots, \emph{diff} programs are used to highlight the differences between them. In an effort to provide developers with a better description of these differences the \emph{Gumtree} algorithm computes a matching between the nodes of the abstract syntax trees of the two snapshots.
 
 \emph{Gumtree} is an algorithm to compute a matching between the nodes of two similar abstract syntax trees.
+It was developed with the goal of improving code differencing tools used with version control systems and the original authors have written a single-threaded implementation in Java.
+Their evaluation showed that the \emph{Gumtree} algorithm is significantly slower than traditional \emph{diff} tools.
+To alleviate this disadvantage we implement the algorithm in C++ and parallelize the computation where possible.
+Our evaluation shows that on randomly generated problem instances our implementation runs multiple times faster than the Java implementation but benefits little from multithreading.
 \end{abstract}
 
 \section{Introduction}\label{sec:intro}
@@ -231,6 +230,7 @@ TODO: Explain where we saw potential for parallelization and why some parts are 
 We examined the algorithm with the goal of finding sections that could easily be parallelized.
 
 \mypar{Checking for isomorphism}
+TODO: Somewhere define isomorphism
 Checking if two subtrees are isomorphic is an operation that occurs often in the top-down phase.
 Further, it is a read-only operation which facilitates parallel execution.
 To check if two subtrees are isomorphic we first check whether their respective root nodes have the same type and the same number of children.
@@ -250,8 +250,16 @@ To avoid unnecessary overhead, we only execute the search in parallel if the num
 \section{Randomized test case generation}
 
 In order to test and evaluate our implementation we need test cases large enough for the execution time to be an inconvenience for the user i.e. multiple seconds.
-We chose to implement a tree generator that randomly generates trees in the following fashion.
-TODO: Explain random tree generator
+We chose to implement a tree generator that randomly generates pairs of similar trees.
+To do this we first generate one tree and then create the other by performing a number of operations on the first tree.
+To generate the first tree we create a root node and set a cursor to it.
+Then we repeatedly choose and execute one of the following three actions until the tree has the desired number of nodes.
+\begin{enumerate}
+	\item A new node is appended to the cursor node and the cursor is set to the new node.
+	\item A new node is appended to the parent of the cursor node and the cursor is set to the new node.
+	\item If the cursor is not at the root node it is set to the parent of the current cursor node.
+\end{enumerate}
+TODO @Chris: Describe the operations on the first tree to create the second tree, please.
 
 \section{Experimental Results}\label{sec:exp}
 
@@ -260,17 +268,17 @@ In this section we describe the setup we used to run performance tests, report t
 \mypar{Experimental setup}
 To compile the project we use GCC 5.2.1 with the \texttt{-O2} optimization level.
 We run our performance tests in Ubuntu 15.10 running on an Intel Core i7-3520M running at 2.9GHz with 4 logical cores on 2 physical cores.
-The system has 8GB of memory.
 The Java reference implementation is run in the OpenJDK Runtime Environment 1.8.0.
 We believe this system is a typical environment in which \emph{diff} programs such as \emph{Gumtree} are run in.
 
-For each approximate tree size, we generate several different test cases and then measure the time the different implementations take to produce a result.
+We generate several different test cases for each target input size. where the  and then measure the time the different implementations take to produce the result.
 
 \mypar{Results}
 First, we compare our implementation to the Java reference implementation.
 Figure \ref{fig:cpp_vs_java} shows the execution time of the implementations with various input sizes.
 The input size is the average number of nodes in the two input trees.
-We see that especially for smaller input sizes, the C++ implementation is faster than the reference implementation.
+We see that the C++ implementation is multiple times faster than the reference implementation.
+We also see that within a 
 
 We then examine how well our implementation scales when executed with multiple threads.
 Figure \ref{fig:cpp_speedup} shows the speedup achieved with 2 and 4 threads with various input sizes.
@@ -280,46 +288,15 @@ We see that our implementation hardly ever achieves a speedup of over 1 and thus
 We further examine our implementation 
 
 \begin{figure}
-	\includegraphics[width=\linewidth]{timePlot_with_java}
-	\label{fig:cpp_vs_java}
+	\includegraphics[width=\linewidth]{timePlot}
 	\caption{Execution time of the different implementations with various input sizes and 10 different randomly generated test cases for each input size. The bars show the standard deviation of the individual test cases from the mean execution time for that input size.}
+	\label{fig:cpp_vs_java}
 \end{figure}
 
 \begin{figure}
-	\includegraphics[width=\linewidth]{speedupPlot_with_java}
-	\label{fig:cpp_speedup}
+	\includegraphics[width=\linewidth]{speedupPlot_c}
 	\caption{Speedup compared to single threaded execution with various input sizes and 10 different randomly generated test cases for each input size. The bars show the standard deviation of the individual test cases from the mean speedup for that input size.}
-\end{figure}
-
-Here you evaluate your work using experiments. You start again with a
-very short summary of the section. The typical structure follows.
-
-\mypar{Experimental setup} Specify the platform (processor, frequency, maybe OS, maybe cache sizes)
-as well as the compiler, version, and flags used. If your work is about performance, 
-I strongly recommend that you play with optimization flags and consider also icc for additional potential speedup.
-
-Then explain what kind of benchmarks you ran. The idea is to give enough information so the experiments are reproducible by somebody else on his or her code.
-For sorting you would talk about the input sizes. For a tool that performs NUMA optimization, you would specify the programs you ran.
-
-\mypar{Results}
-Next divide the experiments into classes, one paragraph for each. In each class of experiments you typically pursue one questions that then is answered by a suitable plot or plots. For example, first you may want to investigate the performance behavior with changing input size, then how your code compares to external benchmarks.
-
-For some tips on benchmarking including how to create a decent viewgraph see pages 22--27 in \cite{Pueschel:10}.
-
-{\bf Comments:}
-\begin{itemize}
-\item Create very readable, attractive plots (do 1 column, not 2 column plots
-for this report) with readable font size. However, the font size should also not be too large; typically it is smaller than the text font size.
-An example is in Fig.~\ref{fftperf} (of course you can have a different style).
-\item Every plot answers a question. You state this question and extract the
-answer from the plot in its discussion.
-\item Every plot should be referenced and discussed.
-\end{itemize}
-
-\begin{figure}\centering
-  \caption{Performance of four single precision implementations of the
-  discrete Fourier transform. The operations count is roughly the
-  same. The labels in this plot are maybe a little bit too small.\label{fftperf}}
+	\label{fig:cpp_speedup}
 \end{figure}
 
 \section{Conclusions}
@@ -333,66 +310,6 @@ This made us doubt the validity of the problem instances that we randomly genera
 It is possible that the generated test cases tend to result in problem instances where only a small proportion of the time is spent in parallel sections.
 To eliminate the possibility of invalid test cases we used \emph{clang} to parse real software projects and dump their ASTs.
 We then converted these ASTs to our encoding format and used the so created test cases to evaluate the performance of the two implementations and their scaling behavior.
-
-Here you need to summarize what you did and why this is
-important. {\em Do not take the abstract} and put it in the past
-tense. Remember, now the reader has (hopefully) read the report, so it
-is a very different situation from the abstract. Try to highlight
-important results and say the things you really want to get across
-such as high-level statements (e.g., we believe that .... is the right
-approach to .... Even though we only considered x, the
-.... technique should be applicable ....) You can also formulate next
-steps if you want. Be brief. After the conclusions there are only the references.
-
-\section{Further comments}
-
-Here we provide some further tips.
-
-\mypar{Further general guidelines}
-
-\begin{itemize}
-\item For short papers, to save space, I use paragraph titles instead of
-subsections, as shown in the introduction.
-
-\item It is generally a good idea to break sections into such smaller
-units for readability and since it helps you to (visually) structure the story.
-
-\item The above section titles should be adapted to more precisely
-reflect what you do.
-
-\item Each section should be started with a very
-short summary of what the reader can expect in this section. Nothing
-more awkward as when the story starts and one does not know what the
-direction is or the goal.
-
-\item Make sure you define every acronym you use, no matter how
-convinced you are the reader knows it.
-
-\item Always spell-check before you submit (to us in this case).
-
-\item Be picky. When writing a paper you should always strive for very
-high quality. Many people may read it and the quality makes a big difference.
-In this class, the quality is part of the grade.
-
-\item Books helping you to write better: \cite{Higham:98} and \cite{Strunk:00}.
-
-\item Conversion to pdf (latex users only): 
-
-dvips -o conference.ps -t letter -Ppdf -G0 conference.dvi
-
-and then
-
-ps2pdf conference.ps
-\end{itemize}
-
-\mypar{Graphics} For plots that are not images {\em never} generate the bitmap formats
-jpeg, gif, bmp, tif. Use eps, which means encapsulate postscript. It is
-scalable since it is a vector graphic description of your graph. E.g.,
-from Matlab, you can export to eps.
-
-The format pdf is also fine for plots (you need pdflatex then), but only if the plot was never before in the format 
-jpeg, gif, bmp, tif.
-
 
 % References should be produced using the bibtex program from suitable
 % BiBTeX files (here: bibl_conf). The IEEEbib.bst bibliography
