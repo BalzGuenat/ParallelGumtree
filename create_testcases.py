@@ -12,7 +12,7 @@ if not os.path.exists('test_cases'):
 linecount_file = open('test_cases/linecount', 'w+')
 linecount_file.seek(0)
 linecount_file.truncate()
-for i in range(0, 7): # create the test case files and write the linecount
+for i in range(0, 8): # create the test case files and write the linecount
 	totalSize = 0
 	dirName = 'test_cases/size_' + str(i)
 	if not os.path.exists(dirName):
