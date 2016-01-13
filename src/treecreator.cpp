@@ -59,13 +59,16 @@ Tree* TreeCreator::seq2Tree(unsigned nodeNumber){
   return nodes[ptr];
 }
 
+unsigned TreeCreator::label_counter2 = 0;
+
 Tree* TreeCreator::myTreeGen(unsigned nodeNumber) {
-	label_counter = 0;
+	//label_counter = 0;
 	const double DOWN_CHANCE = 0.25;
 	const double SIBLING_CHANCE = DOWN_CHANCE + 0.5;
 	const double UP_CHANCE = SIBLING_CHANCE + 0.25;
 	stack<Tree*> parents({new Tree(rNumber(), nextLabel(), 0)});
-	while (label_counter < nodeNumber) {
+	//while (label_counter < nodeNumber) {
+	for (unsigned i = 0; i < nodeNumber; ++i) {
 		double dice = ((double) (rand() % 100)) / 100;
 
 		if (dice < DOWN_CHANCE || parents.size() == 1) {
@@ -73,7 +76,7 @@ Tree* TreeCreator::myTreeGen(unsigned nodeNumber) {
 			newTree->_parent = parents.top();
 			parents.top()->_children.push_back(newTree);
 			parents.push(newTree);
-		} else if (dice < SIBLING_CHANCE || parents.size() == 2) {
+		} else if (dice < SIBLING_CHANCE) {
 			auto newTree = new Tree(rNumber(), nextLabel(), 0);
 			parents.pop();
 			newTree->_parent = parents.top();
@@ -90,18 +93,117 @@ Tree* TreeCreator::myTreeGen(unsigned nodeNumber) {
 
 
 void TreeCreator::pruferTrees(unsigned nodeNumber, string filepath) {
-  srand (time(NULL));
+  srand (time(nullptr));
+  /*
   unsigned initNodeNumber = nodeNumber/5;
   initNodeNumber = initNodeNumber > 2 ? initNodeNumber : 3;
 //  Tree* root1 = seq2Tree(initNodeNumber);
   Tree* root1 = myTreeGen(initNodeNumber);
   cerr << "First tree generated" << endl;
   Tree* root2 = modifyTreeRandom(initNodeNumber, nodeNumber, root1);
+  cerr << "Second tree generated" << endl;*/
+  auto root1 = myTreeGen(nodeNumber);
+  cerr << "First tree generated" << endl;
+  auto root2 = modifyTreeRandom2(root1);
   cerr << "Second tree generated" << endl;
   FileWriter::write(root1, filepath+"1");
+  cerr << "First tree written" << endl;
   FileWriter::write(root2, filepath+"2");
+  cerr << "Second tree written" << endl;
 }
 
+Tree* nthNode(Tree* t, int n) {
+	auto it = t->preOrder().begin();
+	for (int i = 0; i < n; ++i) {
+		++it;
+	}
+	//cout << (*it)->toString() << endl;
+	auto tree = *it;
+	return tree;
+}
+
+bool isAncestor(Tree* first, Tree* second) {
+	// is first ancestor of second?
+	while (second->parent()) {
+		if (second == first)
+			return true;
+		else
+			second = second->parent();
+	}
+	return false;
+}
+
+
+Tree* TreeCreator::modifyTreeRandom2(Tree* root1) {
+	auto root2 = root1->clone();
+
+	auto numberOfOperations = rand() % 10;
+	for (int opNum = 0; opNum < numberOfOperations; ++opNum) {
+		root1->refresh();
+		root2->refresh();
+		switch (rand() % 3) {
+			case 0: {
+				// Insert subtree
+				auto sizeOfNewTree = 1 + rand() % 100;
+				auto newTree = myTreeGen(sizeOfNewTree);
+				auto attachPoint = nthNode(root2, rand() % root2->size());
+				newTree->_parent = attachPoint;
+				auto it = attachPoint->_children.begin();
+				if (attachPoint->_children.size() > 0) {
+					int childPos = rand() % attachPoint->_children.size();
+					for (int i = 0; i < childPos; ++i)
+						++it;
+				}
+				attachPoint->_children.insert(it, newTree);
+				break;
+			}
+			case 1: {
+				// Delete subtree i.e. insert into tree 1
+				auto sizeOfNewTree = 1 + rand() % 100;
+				auto newTree = myTreeGen(sizeOfNewTree);
+				auto attachPoint = nthNode(root1, rand() % root1->size());
+				newTree->_parent = attachPoint;
+				auto it = attachPoint->_children.begin();
+				if (attachPoint->_children.size() > 0) {
+					int childPos = rand() % attachPoint->_children.size();
+					for (int i = 0; i < childPos; ++i)
+						++it;
+				}
+				attachPoint->_children.insert(it, newTree);
+				break;
+			}
+			case 2: {
+				// Move subtree
+				Tree* treeToMove;
+				Tree* attachPoint;
+				do {
+				treeToMove = nthNode(root2, rand() % root2->size());
+				attachPoint = nthNode(root2, rand() % root2->size());
+				} while (isAncestor(treeToMove, attachPoint));
+
+				auto it = attachPoint->_children.begin();
+				if (attachPoint->_children.size() > 0) {
+					int childPos = rand() % attachPoint->_children.size();
+					for (int i = 0; i < childPos; ++i)
+						++it;
+				}
+
+				// remove from old parent
+				auto oldPos = treeToMove->_parent->_children.begin();
+				while (*oldPos != treeToMove)
+					++oldPos;
+				treeToMove->_parent->_children.erase(oldPos);
+
+				// attach to new parent
+				attachPoint->_children.insert(it, treeToMove);
+				treeToMove->_parent = attachPoint;
+				break;
+			}
+		}
+	}
+
+	return root2;
+}
 
 
 Tree* TreeCreator::modifyTreeRandom(unsigned initNodeNumber, unsigned targetNodeNumber, Tree* root1) {
@@ -297,13 +399,6 @@ Tree* TreeCreator::modifyTreeRandom(unsigned initNodeNumber, unsigned targetNode
 }
 
 void TreeCreator::addNodes(Tree* root, vector<Tree*> &nodes) {
-    stack<Tree*> listForChildren;
-    listForChildren.push(root);
-    while (!listForChildren.empty()) {
-        Tree* next = listForChildren.top();
-        listForChildren.pop();
-        for (unsigned i = 0; i < next->_children.size(); i++)
-            listForChildren.push(next->children()[i]);
-        nodes.push_back(next);
-	 }
+	for (auto node : root->preOrder())
+		nodes.push_back(node);
 }
