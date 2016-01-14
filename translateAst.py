@@ -9,7 +9,7 @@ start = True
 skip = False
 convD = {}
 
-file = open(filename.split('.')[0]+"_cleansed.txt", 'w+')
+file = open(filename.split('.')[0]+".test", 'w+')
 
 with open(filename, 'r') as f:
   counter = 0
@@ -26,11 +26,11 @@ with open(filename, 'r') as f:
         skip = True
       else:
         start=False
-        convD[line.split(' ')[0]] = 0
+        convD[line.split(' ',1)[0]] = 0
         pos = line.find('>')
         label = ""
         if pos > -1:
-          label = line[pos:]
+          label = line[pos:].lstrip('> ').strip()
         file.write(str(0)+":"+label+"\n")
     else:
       if skip and not line.startswith("TranslationUnitDecl"):
@@ -51,7 +51,7 @@ with open(filename, 'r') as f:
         elif indent!=0:
           stripped = stripped[1:]
           indent +=1
-        name = stripped.split(' ')[0]
+        name = stripped.split(' ',1)[0]
         try:
           num = convD[name]
         except KeyError:
@@ -62,6 +62,11 @@ with open(filename, 'r') as f:
         pos = stripped.find('>')
         label = ""
         if pos > -1:
-          label = stripped[pos:].lstrip('> ')
-        file.write(" "*indent + str(num)+":"+label)
+          label = stripped[pos:].lstrip('> ').strip()
+          if label.startswith("col") or label.startswith("line"):
+            try:
+              label = label.split(' ',1)[1]
+            except IndexError:
+              pass
+        file.write(" "*indent + str(num)+":"+label+"\n")
 file.close()
