@@ -7,10 +7,10 @@ if len(sys.argv) != 2:
 filename = sys.argv[1]
 start = True
 skip = False
-convD = {}
+convD = {"artificial_root":0}
 
 file = open(filename.split('.')[0]+".test", 'w+')
-
+file.write("0:artificial_root\n")
 with open(filename, 'r') as f:
   counter = 0
   for line in f:
@@ -31,7 +31,7 @@ with open(filename, 'r') as f:
         label = ""
         if pos > -1:
           label = line[pos:].lstrip('> ').strip()
-        file.write(str(0)+":"+label+"\n")
+        file.write("  1:"+label+"\n")
     else:
       if skip and not line.startswith("TranslationUnitDecl"):
         continue
@@ -42,13 +42,13 @@ with open(filename, 'r') as f:
         continue
       else:
         stripped = line.lstrip('| `')
-        indent = len(line)-len(stripped)
-        if indent!=0 and not stripped.startswith('-'):
+        indent = len(line)+2-len(stripped)
+        if indent!=2 and not stripped.startswith('-'):
           continue
-        elif indent==0 and not line.startswith("TranslationUnitDecl"):
+        elif indent==2 and not line.startswith("TranslationUnitDecl"):
           #print "indent==0: " + line + ", counter=" + str(counter)
           continue
-        elif indent!=0:
+        elif indent!=2:
           stripped = stripped[1:]
           indent +=1
         name = stripped.split(' ',1)[0]
