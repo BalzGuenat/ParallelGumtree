@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 #include <fstream>
 #include <algorithm>
 #include <omp.h>
@@ -98,9 +99,11 @@ int main(int argc, char* argv[])
 			auto parseStop = clock();
 			cout << "Parsing: \tT = " << parseStop - parseStart << endl;
 //			ProfilerStart("/home/guenatb/profile.prof");
+			auto time1 = chrono::high_resolution_clock::now();
 			MappingStore mapping;
 			ClassicGumtree matcher(t0, t1, &mapping);
 			matcher.match();
+			auto time2 = chrono::high_resolution_clock::now();
 //			ProfilerStop();
 
 			auto writeStart = clock();
@@ -122,6 +125,8 @@ int main(int argc, char* argv[])
 			cout << "Writing: \tT = " << writeStop - writeStart << endl;
 			delete t0; t0 = nullptr;
 			delete t1; t1 = nullptr;
+			cout << "Matching Time:\t";
+			cout << chrono::duration_cast<chrono::milliseconds>(time2 - time1).count() << endl;
 		}
 	}
 
