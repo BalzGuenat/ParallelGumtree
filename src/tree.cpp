@@ -1,4 +1,5 @@
 #include "tree.h"
+#include <functional>
 
 Tree::Tree(int type, string label, int lineNumber)
   : _type(type), _lineNumber(lineNumber), _label(label), _parent(nullptr) {}
@@ -58,46 +59,51 @@ vector<string> Tree::subTreeToStringVector() const {
 const unsigned SUBTREE_SIZE_CUTOFF = 1 << 4;
 
 bool Tree::isClone(Tree *other) const {
-	bool alltrue = true;
-		if (_type != other->_type ||
-			 _label.compare(other->_label) != 0 ||
-			 _children.size() != other->_children.size())
-			alltrue = false;
-		else {
-			if (size() > SUBTREE_SIZE_CUTOFF) {
-#pragma omp parallel default(shared)
-				{
-#pragma omp single
+	if (_hash != other->hash())
+		return false;
+	else {
+		bool alltrue = true;
+			if (_type != other->_type ||
+				 _label.compare(other->_label) != 0 ||
+				 _children.size() != other->_children.size())
+				alltrue = false;
+			else {
+				if (false && size() > SUBTREE_SIZE_CUTOFF) {
+	#pragma omp parallel default(shared)
 					{
-						for (unsigned i = 0; i < _children.size(); ++i) {
-							auto thisChild = _children[i];
-							auto otherChild = other->_children[i];
-#pragma omp task firstprivate(thisChild, otherChild) shared(alltrue)
-							{
-								if (!thisChild->isClone(otherChild))
-									alltrue = false;
-							}
+	#pragma omp single
+						{
+							for (unsigned i = 0; i < _children.size(); ++i) {
+								auto thisChild = _children[i];
+								auto otherChild = other->_children[i];
+	#pragma omp task firstprivate(thisChild, otherChild) shared(alltrue)
+								{
+									if (!thisChild->isClone(otherChild))
+										alltrue = false;
+								}
 
+							}
+						}
+					}
+					#pragma omp taskwait
+				} else {
+					for (unsigned i = 0; i < _children.size(); ++i) {
+						if (!(_children[i]->isClone(other->_children[i]))) {
+							alltrue = false;
+							break;
 						}
 					}
 				}
-				#pragma omp taskwait
-			} else {
-				for (unsigned i = 0; i < _children.size(); ++i) {
-					if (!(_children[i]->isClone(other->_children[i]))) {
-						alltrue = false;
-						break;
-					}
-				}
 			}
-		}
-	return alltrue;
+		return alltrue;
+	}
 }
 
 void Tree::refresh() {
 	compute_size();
 	compute_depth();
 	compute_height();
+	compute_hash();
 }
 
 void Tree::compute_size() {
@@ -135,6 +141,19 @@ void Tree::compute_height() {
 		}
 		t->set_height(height);
 	}
+}
+
+void Tree::compute_hash() {
+	std::hash<string> str_hash;
+	std::hash<unsigned> u_hash;
+	//std::hash<unsigned long long> ull_hash;
+	//unsigned h = ull_hash((((unsigned long long) u_hash(_type)) << 32) + str_hash(_label));
+	unsigned h = u_hash(u_hash(_type) + str_hash(_label));
+	for (auto c : _children) {
+		c->compute_hash();
+		h = u_hash(h + c->hash());
+	}
+	_hash = h;
 }
 
 Tree* Tree::clone() {

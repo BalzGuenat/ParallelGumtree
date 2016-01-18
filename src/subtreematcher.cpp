@@ -1,6 +1,8 @@
 #include "subtreematcher.h"
+#include <iostream>
+#include <map>
 
-unsigned SubTreeMatcher::MIN_HEIGHT = 1;
+unsigned SubTreeMatcher::MIN_HEIGHT = 2;
 
 SubTreeMatcher::SubTreeMatcher(Tree* src, Tree* dst, MappingStore* store)
   : Matcher(src, dst, store) {}
@@ -24,33 +26,50 @@ void SubTreeMatcher::match()
 		while (srcs.peekHeight() != dsts.peekHeight())
 			popLarger(srcs, dsts);
 
+		//cout << "Height: " << srcs.peekHeight() << endl;
+
 		auto hSrcs = srcs.pop();
+
+		multimap<unsigned, Tree*> hDstsMap;
 		auto hDsts = dsts.pop();
+		for (auto dst : *hDsts) {
+			hDstsMap.insert(make_pair(dst->hash(), dst));
+		}
+		delete hDsts;
 
 		vector<bool> srcMarks(hSrcs->size());
-		vector<bool> dstMarks(hDsts->size());
+		//vector<bool> dstMarks(hDsts->size());
+
+		//cout << "Checking " << hSrcs->size() * hDsts->size() << " pairs." << endl;
 
 		// TODO smartly prallelize these loops
 		// suggestion: each task produces pairs to be linked. in the end, these sets of pairs are collected and by a single thread added to the mapping store.
-		for (unsigned i = 0; i < hSrcs->size(); i++) {
-			for (unsigned j = 0; j < hDsts->size(); j++) {
-				Tree* src = hSrcs->at(i);
-				Tree* dst = hDsts->at(j);
-
+		int counter = 0;
+		const auto hSrcsSize = hSrcs->size();
+//#pragma omp parallel for
+		for (unsigned i = 0; i < hSrcsSize; i++) {
+			Tree* src = hSrcs->at(i);
+			auto range = hDstsMap.equal_range(src->hash());
+			for (auto dstIt = range.first; dstIt != range.second;) {
+				++counter;
+				Tree* dst = dstIt->second;
 				if (src->isClone(dst)) {
 					multiMappings.link(src, dst);
 					srcMarks[i] = true;
-					dstMarks[j] = true;
-				}
+					auto toDelete = dstIt++;
+					hDstsMap.erase(toDelete);
+				} else
+					++dstIt;
 			}
 		}
+
+		//cout << "Checked " << counter << " pairs." << endl;
 
 		for (unsigned i = 0; i < srcMarks.size(); i++)
 			if (srcMarks[i] == false)
 				srcs.open(hSrcs->at(i));
-		for (unsigned j = 0; j < dstMarks.size(); j++)
-			if (dstMarks[j] == false)
-				dsts.open(hDsts->at(j));
+		for (auto dstPair : hDstsMap)
+			dsts.open(dstPair.second);
 		srcs.updateHeight();
 		dsts.updateHeight();
 	}

@@ -66,6 +66,7 @@ public:
   unsigned size() const;
   int id() const;
   void set_id(int id);
+  unsigned hash() const;
 
   bool isRoot() const;
   bool isLeaf() const;
@@ -82,6 +83,7 @@ public:
   void compute_size();
   void compute_depth();
   void compute_height();
+  void compute_hash();
 
   Tree* clone();
 
@@ -111,6 +113,7 @@ private:
   unsigned _size;
   unsigned _height;
   unsigned _depth;
+  unsigned _hash;
 };
 
 inline int Tree::type() const { return _type; }
@@ -121,6 +124,7 @@ inline Tree* Tree::parent() const { return _parent; }
 inline const vector<Tree*>& Tree::children() const {
   return _children;
 }
+inline unsigned Tree::hash() const { return _hash; }
 inline bool Tree::isLeaf() const { return _children.empty(); }
 inline bool Tree::isMatched() const { return _isMatched; }
 inline void Tree::set_matched(bool isMatched) { _isMatched = isMatched; }
