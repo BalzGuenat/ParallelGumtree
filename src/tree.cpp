@@ -58,45 +58,56 @@ vector<string> Tree::subTreeToStringVector() const {
 
 const unsigned SUBTREE_SIZE_CUTOFF = 1 << 4;
 
+bool Tree::is_clone_parallel(const Tree* a, const Tree* b) {
+	if (a->_hash != b->_hash)
+		return false;
+
+	if (a->_type != b->_type ||
+		 a->_label.compare(b->_label) != 0 ||
+		 a->_children.size() != b->_children.size())
+		return false;
+
+	bool alltrue = true;
+	for (unsigned i = 0; i < a->_children.size(); ++i)
+	{
+		auto ac = a->_children[i];
+		auto bc = b->_children[i];
+#pragma omp task shared(alltrue) if(a->size() > SUBTREE_SIZE_CUTOFF)
+		{
+			if (!ac->isClone(bc))
+			{
+#pragma omp atomic write
+				alltrue = false;
+#pragma omp cancel taskgroup
+			}
+		}
+	}
+#pragma omp taskwait
+	return alltrue;
+}
+
 bool Tree::isClone(Tree *other) const {
 	if (_hash != other->hash())
 		return false;
-	else {
-		bool alltrue = true;
-			if (_type != other->_type ||
-				 _label.compare(other->_label) != 0 ||
-				 _children.size() != other->_children.size())
-				alltrue = false;
-			else {
-				if (false && size() > SUBTREE_SIZE_CUTOFF) {
-	#pragma omp parallel default(shared)
-					{
-	#pragma omp single
-						{
-							for (unsigned i = 0; i < _children.size(); ++i) {
-								auto thisChild = _children[i];
-								auto otherChild = other->_children[i];
-	#pragma omp task firstprivate(thisChild, otherChild) shared(alltrue)
-								{
-									if (!thisChild->isClone(otherChild))
-										alltrue = false;
-								}
 
-							}
-						}
-					}
-					#pragma omp taskwait
-				} else {
-					for (unsigned i = 0; i < _children.size(); ++i) {
-						if (!(_children[i]->isClone(other->_children[i]))) {
-							alltrue = false;
-							break;
-						}
-					}
-				}
+	if (_type != other->_type ||
+		 _label.compare(other->_label) != 0 ||
+		 _children.size() != other->_children.size())
+		return false;
+
+	bool alltrue = true;
+	auto this_ptr = this;
+#pragma omp parallel default(shared) if(size() > SUBTREE_SIZE_CUTOFF)
+	{
+#pragma omp master
+		{
+#pragma omp taskgroup
+			{
+				alltrue = is_clone_parallel(this_ptr, other);
 			}
-		return alltrue;
+		}
 	}
+	return alltrue;
 }
 
 void Tree::refresh() {
