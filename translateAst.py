@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import sys
 
 if len(sys.argv) != 2:
@@ -68,5 +69,5 @@ with open(filename, 'r') as f:
               label = label.split(' ',1)[1]
             except IndexError:
               pass
-        file.write(" "*indent/2 + str(num)+":"+label+"\n")
+        file.write(" "*(indent/2) + str(num)+":"+label+"\n")
 file.close()
