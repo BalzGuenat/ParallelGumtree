@@ -31,7 +31,7 @@ with open(filename, 'r') as f:
         label = ""
         if pos > -1:
           label = line[pos:].lstrip('> ').strip()
-        file.write("  1:"+label+"\n")
+        file.write(" 1:"+label+"\n")
     else:
       if skip and not line.startswith("TranslationUnitDecl"):
         continue
@@ -68,5 +68,5 @@ with open(filename, 'r') as f:
               label = label.split(' ',1)[1]
             except IndexError:
               pass
-        file.write(" "*indent + str(num)+":"+label+"\n")
+        file.write(" "*indent/2 + str(num)+":"+label+"\n")
 file.close()
