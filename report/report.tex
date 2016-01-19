@@ -69,37 +69,40 @@ Our evaluation shows that on randomly generated problem instances and real world
 
 Software projects evolve over the time of their development and operation.
 Nowadays the history of such evolution is typically recorded by a version control system (VCS) which stores snapshots of the project state.
-For the developers to understand this evolution, it is of tremendous help if not only these snapshots are available but also a representation of the transition from one state the other.
-Often these transitions are represented in form of differences between the files or edit operations transforming the old into the new file.
+For the developers to understand this evolution, it is of tremendous help if not only these snapshots are available but also a representation of the transitions between them.
+Often these transitions are represented in form of differences between the files or as edit operations transforming the old state into the new state.
+
 The transitions are usually not stored explicitly but are computed from the two states at the user's request.
-Algorithms performing this computation are called diff algorithms.
-Most popular diff algorithms like \emph{diff}, \emph{kdiff3} and \emph{git-diff} regard all files as lists of lines and find the differences between them by computing their longest common subsequence.
+Algorithms performing this computation are called \emph{diff algorithms}.
+Most popular diff algorithms like \emph{GNU diff}, \emph{KDiff3} and \emph{git-diff} regard files as lists of lines and find the differences between them by computing their longest common subsequence and regarding those lines as unchanged.
 
 This approach is simple and fast but it is often too coarse grained and lacks conciseness.
 Consider for example the definition of a Java method that is moved from the top of a file to the bottom of the same file.
 \emph{git-diff} will regard this as a deletion of multiple lines at the top of the file and an unrelated addition of multiple lines at the bottom.
 
-The \emph{Gumtree} algorithm introduced by Falleri et al. \cite{falleri:2014:structure_diff} is a valid attempt at overcoming these issues by leveraging the structure inherent in program code.
+Falleri et al. \cite{falleri:2014:structure_diff} propose an approach to code differencing that leverages the structure inherent in program code in an attempt to overcome these issues.
 Instead of regarding files as lists of lines, the code is parsed to yield an abstract syntax tree (AST).
-Then, in a step analogous to finding the longest common subsequence of lists, a matching between the two versions of the AST is computed and finally a description of edit operations is generated.
-The main contribution of the \emph{Gumtree} algorithm is a way to find said matching.
-Using this structure-aware approach, the example from before will be represented as a single move operation of the AST node representing the method definition.
+Then, to find the unchanged parts of the code, a matching between the two versions of the AST is computed and finally a description of edit operations is generated.
+The main contribution of the paper is the \emph{Gumtree} algorithm which is used to find said matching.
+Using this structure-aware approach, the example from before will result in a single move operation of the AST node representing the method definition.
 
 The disadvantages of this approach are twofold.
 Firstly, it requires the integration of a parser for the respective language to generate the AST.
-Secondly, parsing and subsequently finding a matching between the ASTs is much more computationally involved and thus takes a longer time.
-The existing implementation written in Java \footnote{github.com/GumTreeDiff/gumtree} defers the generation of the AST to an external component but the matching itself is computed in a purely single-threaded manner.
-In an attempt to alleviate the latter disadvantage, we have in a first step implemented the \emph{Gumtree} algorithm in C++ and in a second step tried to parallelize it where possible.
-We will use the existing Java implementation as a reference both in terms of correctness as well as performance.
-
-TODO: Describe what we did and what the results were.
+Secondly, parsing and subsequently finding a matching between the ASTs is more computationally involved and thus takes a longer time than traditional approaches.
+The paper reports an increase of execution time by factors 18 and 30, for a Java and JavaScript project respectively, compared to a textual diff program.
+Parsing accounts for around 55\% and 33\% of the total execution time.
+When testing the performance on a C++ project, we found that the execution time increases drastically to the point where practical application is impossible.
+%The existing Java implementation\footnote{github.com/GumTreeDiff/gumtree} defers the generation of the AST to an external component so its overall performance is partially out of its control.
+%The matching itself is computed in a purely single-threaded manner.
+In an attempt to alleviate this performance disadvantage, we implement the \emph{Gumtree} algorithm in C++, optimize it and attempt to further increase the performance by parallelizing it where possible.
+We use the existing Java implementation as a reference both in terms of correctness as well as performance.
 
 \section{Background: The Gumtree algorithm}\label{sec:background}
 
-This section describes the original \emph{Gumtree} algorithm as it was introduced in sections 2 and 3 in the Falleri paper \cite{falleri:2014:structure_diff}.
+This section describes the original \emph{Gumtree} algorithm as it was introduced in sections 2 and 3 in the Falleri paper \cite{falleri:2014:structure_diff}. The authors provide an openly available Java implementation on Github\footnote{github.com/GumTreeDiff/gumtree}.
 
 \mypar{Problem definition}
-The \emph{Gumtree} algorithm regards ASTs as ordered rooted trees where nodes have a type and may have a string value associated to them.
+The \emph{Gumtree} algorithm regards ASTs as ordered rooted trees where nodes have a type and may have a string token associated to them.
 %It was designed specifically with ASTs in mind but can be applied to any type of tree with these properties.
 Given two such trees $T_1$ and $T_2$, the algorithm produces a matching between the nodes of the two trees.
 A matching is represented as a set of pairs of nodes where each node is part of at most one pair and nodes belonging to the same pair have the same type.
@@ -117,8 +120,9 @@ For the purpose of comparing our implementation to the reference, we have modifi
 \mypar{Top-down phase}
 This phase finds and matches isomorphic subtrees down to a minimum height $minHeight$ by comparing increasingly smaller subtrees.
 Unique matches are accepted immediately while subtrees that are isomorphic to multiple subtrees are matched based on the similarity of their parents at a later stage.
+Two subtrees with roots $t_1$ and $t_2$ are isomorphic if and only if $t_1$ and $t_2$ have the same type and token and every child of $t_1$ is isomorphic to the respective child of $t_2$.
 
-This phase uses a height-indexed priority list of subtrees (represented by their respective root nodes) for each tree supporting the following operations:
+This phase uses a height-indexed priority list of subtrees (each represented by its root node) for each input tree supporting the following operations:
 \emph{peekMax} returns the maximum subtree height in the list.
 \emph{pop} returns the set of subtrees with maximum height and removes them from the list.
 \emph{push} inserts a subtree into the list.
@@ -157,7 +161,7 @@ See Algorithm \ref{alg:top-down} for a full description of the top-down phase.
 			$H_2 \gets pop(L_2)$\;
 			\ForEach{$ (t_1,t_2) \in H_1 \times H_2 $}{
 				\If{$ \text{isomorphic}(t_1,t_2) $}{
-					\eIf{$ \exists t_y \in T_2 : \text{isomorphic}(t_1,t_y) \wedge t_y \neq t_2 $\\ \KwOr $ \exists t_x \in T_1 : \text{isomorphic}(t_x,t_2) \wedge t_x \neq t_1 $\\}{
+					\eIf{$ \exists t_y \in H_2 : \text{isomorphic}(t_1,t_y) \wedge t_y \neq t_2 $\\ \KwOr $ \exists t_x \in H_1 : \text{isomorphic}(t_x,t_2) \wedge t_x \neq t_1 $\\}{
 						add($A, (t_1,t_2)$)\;
 					}{
 						add all pairs of isomorphic nodes of $d(t_1)$ and $d(t_2)$ to $M$\;
@@ -176,7 +180,7 @@ See Algorithm \ref{alg:top-down} for a full description of the top-down phase.
 		$A \gets A \setminus \{(t_1,t_y) \in A\}$\;
 		$A \gets A \setminus \{(t_x,t_2) \in A\}$\;
 	}
-\caption{The top-down phase (taken from \cite{falleri:2014:structure_diff})}
+\caption{The top-down phase}
 \label{alg:top-down}
 \end{algorithm}
 
@@ -190,76 +194,104 @@ See Algorithm \ref{alg:bottom-up} for a full description of the top-down phase.
 The mapping $M$ resulting from this phase is the final output of the \emph{Gumtree} algorithm without \emph{recovery mappings}.
 
 \begin{algorithm}
-	\KwData{Two trees $T_1, T_2$, a set of mappings $M$ (from the top-down phase) and a threshold $minSim$}
+	\KwData{Two trees $T_1, T_2$, a set of mappings $M$ (from the top-down phase), two lists of nodes $seeds, candidates$ and a threshold $minSim$}
 	\KwResult{The set of mappings $M$}
 	\ForEach{$t_1 \in T_1$ in post-order}{
 		\If{$t_1$ is not matched $\wedge t_1$ has matched children}{
-			$t_2 \gets \text{bestCandidate}(t_1,M)$\;
-			\If{$ t_2 \neq null \wedge sim(t_1,t_2,M) > minSim $}{
-				add $(t_1,t_2)$ to $M$\;
+			%$t_2 \gets \text{bestCandidate}(t_1,M)$\;
+			$seeds \gets \{t_2 : (c_1, t_2) \in M \wedge c_1 \in d(t_1) \}$\;
+			\ForEach{$s \in seeds$}{
+				\While{$s \neq root(T_2)$}{
+					$s \gets parent(s)$\;
+					\If{$ type(s) = type(t_1) \wedge s \neq root(T_2) \wedge $ $s \text{ is not matched} $}{
+						add($candidates, s$)\;
+					}
+				}
+			}
+			\If{$candidates \neq \emptyset $}{
+				%$t_2 \gets \{c \in candidates : c \text{ maximises } sim(t_1, c, M)\}$\;
+				$t_2 \gets c \in candidates$ with maximum $sim(t_1,c,M)$\;
+				\If{$ sim(t_1,t_2,M) > minSim $}{
+					add $(t_1,t_2)$ to $M$\;
+				}
 			}
 		}
 	}
 \caption{The bottom-up phase (without \emph{recovery mappings})}
+%\caption{The bottom-up phase}
 \label{alg:bottom-up}
 \end{algorithm}
 
 \mypar{Chosen thresholds}
 We set the named thresholds to $minSim=0.5$ and $minheight=2$ as recommended in the Falleri paper \cite{falleri:2014:structure_diff}.
 
-\section{Parallel implementation in C++}\label{sec:yourmethod}
+\section{Implementation}\label{sec:yourmethod}
 
-In this section we present our implementation of the \emph{Gumtree} algorithm written in C++ and describe our efforts to parallelize it.
+In this section we present our implementation of the \emph{Gumtree} algorithm written in C++ and describe our efforts to optimize and parallelize it.
 To achieve parallelization, we make use of the OpenMP API\footnote{openmp.org}.
 The entire project is open source and available on Github\footnote{github.com/BalzGuenat/ParallelGumtree}.
 
-\mypar{Existing Java implementation}
-The authors of the original paper provide an implementation written in Java which is publicly available on Github\footnote{github.com/GumTreeDiff/gumtree}.
-%The back-end of this implementation is built in a modular fashion so as to support the easy integration of different 
-
 \mypar{Writing Gumtree in C++}
-To write our implementation we adhered very closely to the existing Java implementation.
-We specify a simple encoding format for the input trees.
-TODO: explain encoding?
-Two files each representing one input tree are read, parsed and the trees are constructed.
+To write our implementation we adhered very closely to the existing Java implementation of the matching algorithm.
+Besides the matching algorithm the Java implementation also features a framework for easier integration of parsers and other components.
+In our work we focus only on the matching algorithm.
+To avoid the integration of a parser we use a simple encoding format for the input trees that stores each node on a line.
+We output the resulting matching as tuples of line numbers identifying the nodes in the input trees.
+
+For the purpose of testing and evaluating our implementation we implement two components for the Java implementation.
+The first component parses the mentioned encoding format and constructs the tree objects used by the matching algorithm.
+The second components simply writes the resulting matching to a file, again in the same format as the C++ implementation.
+The code for these component is available on Github\footnote{github.com/BalzGuenat/gumtree/tree/prallel-gt-reference}.
 
 \mypar{Finding potential for parallel execution}
+TODO: titles in this section are shit currently
 
-TODO: Explain where we saw potential for parallelization and why some parts are not (easily) parallelizable.
-
-We examined the algorithm with the goal of finding sections that could easily be parallelized.
+In the top-down phase we iterate over the cross product of two potentially large sets (see Algorithm \ref{alg:top-down}, line 12).
+Indeed, in tests with Electron (a C++ project) we see this cross product grow to a cardinality of several billion for a subtree height of 2.
+Instead of naively iterating over the entire cross product to find isomorphic subtrees we insert the nodes in $H_2$ into a hash map using a structure-based hash function which incorporates the type, label and recursively the descendants of a node.
+We then iterate over $H_1$, using the same hash function to look up potentially isomorphic subtrees in the hash map constructed before.
+With this approach, the number of pairs that need to be checked for isomorphism shrinks to a few thousand.
 
 \mypar{Checking for isomorphism}
-TODO: Somewhere define isomorphism
-Checking if two subtrees are isomorphic is an operation that occurs often in the top-down phase.
-Further, it is a read-only operation which facilitates parallel execution.
-To check if two subtrees are isomorphic we first check whether their respective root nodes have the same type and the same number of children.
-If yes, we iterate over their children and for each child pair, we create an OpenMP task that recursively checks if the pair is isomorphic.
-To avoid unnecessary overhead, we only execute the check in parallel if the size of the subtree is above a certain threshold \emph{SubtreeSizeCutoff}.
-The size of a subtree is the total number of nodes in that subtree.
+Checking whether two subtrees are isomorphic is a read-only operation that is easily partitioned into independent subtasks on non-overlapping data.
+As such it lends itself to parallel execution.
+To check if two subtrees are isomorphic we first check whether their hash values are equal and only if they are we compare the node-internal values and children.
+Hereby the top-level invocation creates an \emph{OpenMP taskgroup} and for each recursive invocation, a task is created in that taskgroup.
+%If yes, we iterate over their children and for each child pair, we create an OpenMP task that recursively checks if the pair is isomorphic.
+To avoid unnecessary overhead, we only spawn new tasks for subtrees with a size above a certain threshold \emph{SubtreeSizeCutoff}.
+An added benefit of using tasks instead of simply splitting the problem into large chunks and assigning those to threads is the automatic load balancing they provide.
+This is especially valuable considering that ASTs are typically badly balanced.
 
 \mypar{Finding the best candidate}
-In the bottom-up phase on line 3 we search for the best candidate to match with a given node $t_1$.
-Remember that a node $c \in T_2$ is a candidate for $t_1$ if it is unmatched, has the same type as $t_1$ and has some matching descendants.
-The best candidate is the one with the largest similarity value $sim(t_1,c,M)$.
+In the bottom-up phase we select the best out of a list of candidates to match with a given node $t_1$ (see Algorithm \ref{alg:bottom-up}, line 10).
+This is a simple search for a maximum which we parallelize using the OpenMP parallel for-loop pragma with a reduction function that in addition to the maximum similarity value also reduces the candidate associated with that value.
+%Remember that a node $c \in T_2$ is a candidate for $t_1$ if it is unmatched, has the same type as $t_1$ and has some matching descendants.
+%The best candidate is the one with the largest similarity value $sim(t_1,c,M)$.
 %We parallelize the search for the best candidate by distributing the 
-We first gather all candidates in a list and then use the OpenMP parallel for-loop pragma to distribute the search for the best candidate over multiple threads.
+%We first gather all candidates in a list and then use the OpenMP parallel for-loop pragma to distribute the search for the best candidate over multiple threads.
 To avoid unnecessary overhead, we only execute the search in parallel if the number of candidates is greater than a certain threshold \emph{CandidatesSizeCutoff}.
-%In the top-down phase on line 12, we iterate over the cross product of two potentially large
+Even though the number of candidates for a given node is typically small, we still see potential in parallelizing this search as each invocation of the similarity function requires an iteration over all descendants of that node.
 
 \section{Randomized test case generation}
 
 In order to test and evaluate our implementation we need test cases large enough for the execution time to be an inconvenience for the user i.e. multiple seconds.
-We chose to implement a tree generator that randomly generates pairs of similar trees.
-To do this we first generate one tree and then create the other by performing a number of operations on the first tree.
-To generate the first tree we create a root node and set a cursor to it.
-Then we repeatedly choose and execute one of the following three actions until the tree has the desired number of nodes.
+To get a large number of test cases we chose to implement a tree generator that randomly generates pairs of similar trees.
+The structure of the generated trees and the differences between them should resemble real-world ASTs and version differences.
+
+To generate these pairs of trees we first construct one tree, clone it and then introduce differences by performing a number of operations on both of those trees.
+To generate the first tree $T_1$ we create a root node and set a cursor to it.
+Then we repeatedly select and execute one of the following three actions randomly until the tree has the desired number of nodes.
 \begin{enumerate}
 	\item A new node is appended to the cursor node and the cursor is set to the new node.
 	\item A new node is appended to the parent of the cursor node and the cursor is set to the new node.
 	\item If the cursor is not at the root node it is set to the parent of the current cursor node.
 \end{enumerate}
-TODO @Chris: Describe the operations on the first tree to create the second tree, please.
+We create $T_2$ by cloning $T_1$ and then create differences between them by repeatedly selecting one of the following actions randomly.
+\begin{enumerate}
+	\item A new small subtree is generated and inserted into $T_1$ at a random position.
+	\item A new small subtree is generated and inserted into $T_2$ at a random position.
+	\item A randomly selected subtree in $T_2$ is moved to a random position.
+\end{enumerate}
 
 \section{Experimental Results}\label{sec:exp}
 
@@ -267,25 +299,29 @@ In this section we describe the setup we used to run performance tests, report t
 
 \mypar{Experimental setup}
 To compile the project we use GCC 5.2.1 with the \texttt{-O2} optimization level.
-We run our performance tests in Ubuntu 15.10 running on an Intel Core i7-3520M running at 2.9GHz with 4 logical cores on 2 physical cores.
+We run our performance tests in Ubuntu 15.10 running on an Intel Core i7-3520M running at 2.9~GHz with 4 logical cores on 2 physical cores and 8~GB of memory.
 The Java reference implementation is run in the OpenJDK Runtime Environment 1.8.0.
 We believe this system is a typical environment in which \emph{diff} programs such as \emph{Gumtree} are run in.
 
 We generate several different test cases for each target input size. where the  and then measure the time the different implementations take to produce the result.
 
-\mypar{Results}
-First, we compare our implementation to the Java reference implementation.
+\mypar{Comparison to the reference implementation}
+We compare our implementation to the Java reference implementation.
 Figure \ref{fig:cpp_vs_java} shows the execution time of the implementations with various input sizes.
 The input size is the average number of nodes in the two input trees.
 We see that the C++ implementation is multiple times faster than the reference implementation.
 We also see that within a 
 
-We then examine how well our implementation scales when executed with multiple threads.
+\mypar{Scaling behavior}
+We examine how well our implementation scales when executed with multiple threads.
 Figure \ref{fig:cpp_speedup} shows the speedup achieved with 2 and 4 threads with various input sizes.
 We see that our implementation hardly ever achieves a speedup of over 1 and thus does not benefit at all from running on multiple threads.
 
 \mypar{Possible reasons for bad scaling}
-We further examine our implementation 
+While we could achieve substantially improved performance in comparison to reference implementation, our implementation fails to benefit from multithreaded execution.
+An important observation to make is that the proportion of the computation that is executed in parallel depends heavily on the problem instance and is generally quite small.
+The parallelized check for isomorphism is only executed for subtrees with matching hash values i.e. for identical subtrees or, with low probability, for different subtrees with identical hash values.
+Similarly, we see that for a large majority of nodes, the candidate list in the bottom-up phase does not contain more than one candidate which makes it impossible to gain a speedup with multiple threads.
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{timePlot}
