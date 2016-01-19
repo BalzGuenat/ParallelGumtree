@@ -49,7 +49,7 @@ void GreedyBottomUpMatcher::match() {
 
 vector<Tree*> GreedyBottomUpMatcher::getDstCandidates(Tree* src) {
 	vector<Tree*> seeds;
-	for (auto c : src->children()) {
+	for (auto c : src->descendants()) {
 		auto m = _mappings->get_dst(c);
 		if (m)
 			seeds.push_back(m);
