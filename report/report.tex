@@ -60,7 +60,7 @@
 It was developed with the goal of improving code differencing tools used with version control systems and the original authors have written a single-threaded implementation in Java.
 Their evaluation showed that the \emph{Gumtree} algorithm is significantly slower than traditional \emph{diff} tools.
 To alleviate this disadvantage we implement the algorithm in C++ and parallelize the computation where possible.
-Our evaluation shows that on randomly generated problem instances our implementation runs multiple times faster than the Java implementation but benefits little from multithreading.
+Our evaluation shows that on randomly generated problem instances and real world examples our implementation runs multiple times faster than the Java implementation but benefits little from multithreading.
 \end{abstract}
 
 \section{Introduction}\label{sec:intro}
