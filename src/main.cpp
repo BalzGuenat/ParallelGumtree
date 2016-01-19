@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 #include <fstream>
 #include <algorithm>
 #include <omp.h>
@@ -92,14 +93,20 @@ int main(int argc, char* argv[])
 		auto file0 = args[argc-2];
 		auto file1 = args[argc-1];
 		if (file0[0] != '-' && file1[0] != '-') {
+			auto parseStart = clock();
 			auto t0 = FileParser::parse(file0);
 			auto t1 = FileParser::parse(file1);
+			auto parseStop = clock();
+			cout << "Parsing: \tT = " << parseStop - parseStart << endl;
 //			ProfilerStart("/home/guenatb/profile.prof");
+			auto time1 = chrono::high_resolution_clock::now();
 			MappingStore mapping;
 			ClassicGumtree matcher(t0, t1, &mapping);
 			matcher.match();
+			auto time2 = chrono::high_resolution_clock::now();
 //			ProfilerStop();
 
+			auto writeStart = clock();
 			vector<pair<Tree*, Tree*>> mappingVector(mapping.begin(), mapping.end());
 			struct {
 					bool operator() (pair<Tree*, Tree*> a, pair<Tree*, Tree*> b) {
@@ -114,8 +121,12 @@ int main(int argc, char* argv[])
 				outputFile << m.first->lineNumber() << " -> " << m.second->lineNumber() << endl;
 			  }
 			outputFile.close();
+			auto writeStop = clock();
+			cout << "Writing: \tT = " << writeStop - writeStart << endl;
 			delete t0; t0 = nullptr;
 			delete t1; t1 = nullptr;
+			cout << "Matching Time:\t";
+			cout << chrono::duration_cast<chrono::milliseconds>(time2 - time1).count() << endl;
 		}
 	}
 

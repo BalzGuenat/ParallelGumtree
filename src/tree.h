@@ -101,6 +101,7 @@ public:
 
 private:
 
+  static bool is_clone_parallel(const Tree* a, const Tree* b);
   vector<string> subTreeToStringVector() const;
   void get_trees(Tree* tree, vector<Tree*>& trees);
   const int _type;
