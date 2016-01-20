@@ -150,14 +150,16 @@ void Tree::compute_height() {
 }
 
 void Tree::compute_hash() {
+	for (auto c : _children) {
+#pragma omp task
+		c->compute_hash();
+	}
+#pragma omp taskwait
 	std::hash<string> str_hash;
 	std::hash<unsigned> u_hash;
-	//std::hash<unsigned long long> ull_hash;
-	//unsigned h = ull_hash((((unsigned long long) u_hash(_type)) << 32) + str_hash(_label));
-	unsigned h = u_hash(u_hash(_type) + str_hash(_label));
+	unsigned h = u_hash(u_hash(_type) ^ str_hash(_label));
 	for (auto c : _children) {
-		c->compute_hash();
-		h = u_hash(h + c->hash());
+		h = u_hash(h ^ c->hash());
 	}
 	_hash = h;
 }

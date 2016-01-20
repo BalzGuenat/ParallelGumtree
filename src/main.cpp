@@ -94,8 +94,15 @@ int main(int argc, char* argv[])
 		auto file1 = args[argc-1];
 		if (file0[0] != '-' && file1[0] != '-') {
 			auto parseStart = clock();
-			auto t0 = FileParser::parse(file0);
-			auto t1 = FileParser::parse(file1);
+			Tree* t0 = nullptr;
+			Tree* t1 = nullptr;
+#pragma omp parallel sections
+			{
+#pragma omp section
+			t0 = FileParser::parse(file0);
+#pragma omp section
+			t1 = FileParser::parse(file1);
+			}
 			auto parseStop = clock();
 			cout << "Parsing: \tT = " << parseStop - parseStart << endl;
 //			ProfilerStart("/home/guenatb/profile.prof");
