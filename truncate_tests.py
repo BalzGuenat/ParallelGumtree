@@ -1,3 +1,4 @@
+#!/usr/bin/python2
 from os import listdir
 from shutil import copyfile
 import os
@@ -15,20 +16,19 @@ for size in range(12,25):
 		copyfile(dirName+test_files[i],filename)
 		# truncate file
 		with open(filename,"r+") as f:
-			x = 0 # how many lines read yet?
-			for line in f:
-				x+=1 # update lines read
-				if x==2**size: # there yet?
+			eof = False
+			for _ in xrange(2**size):
+				l = f.readline()
+				if not l.strip():
+					eof = True
 					break
-			if x==2**size:
-				f.truncate()
-			else:
+			if eof:
 				os.remove(filename)
+			else:
+				f.truncate()
 folders = [f for f in listdir(dirName) if f.startswith("size")]
 for f in folders:
 	try:
 		os.rmdir(dirName + f)
 	except OSError as ex:
-		if ex.errno != errno.ENOTEMPTY:
-			print "couldn't remove an empty folder for some weird reason?"
-			print ex
+		pass

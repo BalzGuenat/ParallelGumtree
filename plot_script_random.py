@@ -20,7 +20,7 @@ runJava = referenceGumtreeTimes.any()
 # sort the files by size:
 p = average_linecount.argsort() # get the permutation
 average_linecount = average_linecount[p] # reorder the average linecount itself
-for i in range(0,2)
+for i in range(0,2):
 	for r in range(0,runs):
 		if runJava:
 			referenceGumtreeTimes[i][r] = referenceGumtreeTimes[i][r][p]
@@ -32,26 +32,22 @@ fig, ax = plt.subplots()
 ax.set_ylabel('elapsed time [seconds]')
 ax.set_xlabel('input size [average number of nodes]')
 ax.set_title("Input tree size vs execution time")
-legend = []
 mark = ['o', 's']
 col = ['r','b']
 for i in range(0,2):
 	parallel_average_times = np.empty([max_threads_log, sizes])
 	parallel_standard_deviation = np.empty([max_threads_log, sizes])
 	reference_standard_deviation = np.empty([max_threads_log, sizes])
+	label_extra = ", total" if i==1 else ""
 	for t in range(0,max_threads_log):
-		parallel_average_times[t] = parallelGumtreeTimes[i][t].nanmean(axis=0)
-		parallel_standard_deviation[t] = parallelGumtreeTimes[i][t].nanstd(axis=0)
-		ax.errorbar(average_linecount, parallel_average_times[t], parallel_standard_deviation[t], marker=mark[i], color=col[i])
+		parallel_average_times[t] = np.nanmean(parallelGumtreeTimes[i][t],axis=0)
+		parallel_standard_deviation[t] = np.nanstd(parallelGumtreeTimes[i][t],axis=0)
+		ax.errorbar(average_linecount, parallel_average_times[t], parallel_standard_deviation[t], marker=mark[i], color=col[0], label=('C++, ' + str(2**t) + ' thread(s)' + label_extra))
 	if runJava:
-		reference_average_times = referenceGumtreeTimes[i].nanmean(axis=0)
-		reference_standard_deviation = referenceGumtreeTimes[i].nanstd(axis=0)
-		ax.errorbar(average_linecount, reference_average_times, reference_standard_deviation, marker=mark[i], color=col[i])
-for t in range(0,max_threads_log):
-	legend.append('C++, ' + str(2**t) + ' thread(s)')
-if runJava:
-	legend.append('Reference implementation')
-ax.legend(legend, loc='upper left', prop={'size':16}).draggable()
+		reference_average_times = np.nanmean(referenceGumtreeTimes[i],axis=0)
+		reference_standard_deviation = np.nanstd(referenceGumtreeTimes[i],axis=0)
+		ax.errorbar(average_linecount, reference_average_times, reference_standard_deviation, marker=mark[i], color=col[1], label='Reference implementation' + label_extra)
+ax.legend(loc='upper left', prop={'size':16}).draggable()
 ax.set_xscale('log')
 plt.draw()
 plt.savefig('timePlot.png', bbox_inches='tight')
@@ -61,14 +57,15 @@ if show_speedup:
 	if max_threads_log>1:
 		print "\nSpeedup vs single c++ thread"
 		fig, ax = plt.subplots()
-		for i in range(0,2)
+		for i in range(0,2):
 			speedup_parallel_standard_deviation = np.empty([max_threads_log, sizes])
 			average_speedup_parallel = np.empty([max_threads_log, sizes])
+			label_extra = ", total" if i==1 else ""
 			for t in range(1,max_threads_log):
 				speedup_parallel = parallelGumtreeTimes[i][0]/parallelGumtreeTimes[i][t]
-				average_speedup_parallel[t] = speedup_parallel.nanmean(axis=0)
-				speedup_parallel_standard_deviation[t] = speedup_parallel.nanstd(axis=0)
-				ax.errorbar(average_linecount, average_speedup_parallel[t], speedup_parallel_standard_deviation[t], marker=mark[i], color=col[i])
+				average_speedup_parallel[t] = np.nanmean(speedup_parallel,axis=0)
+				speedup_parallel_standard_deviation[t] = np.nanstd(speedup_parallel,axis=0)
+				ax.errorbar(average_linecount, average_speedup_parallel[t], speedup_parallel_standard_deviation[t], marker=mark[i], color=col[i], label=('C++, ' + str(2**t) + ' thread(s)'+label_extra))
 				#ax.plot(average_linecount, speedup_parallel, marker='o')
 				if i == 0:
 					print "average speedup with " + str(2**t) + " threads for the match time: " + str(np.nanmean(speedup_parallel))
@@ -77,8 +74,7 @@ if show_speedup:
 		ax.set_ylabel('speedup')
 		ax.set_xlabel('input size [average number of nodes]')
 		ax.set_title("speedup with multiple threads")
-		legend = legend[1:-1] if runJava else legend[1:]
-		ax.legend(legend[1:], loc='lower right').draggable()
+		ax.legend(loc='lower right').draggable()
 		ax.set_xscale('log')
 		plt.draw()
 		plt.savefig('speedupPlot_c.png', bbox_inches='tight')

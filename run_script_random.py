@@ -9,7 +9,7 @@ import subprocess
 import time
 import numpy as np
 
-sizes = 1
+sizes = 5
 runs = 1
 max_threads_log = 3
 runJava = True
