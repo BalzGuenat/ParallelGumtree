@@ -90,11 +90,6 @@ bool Tree::isClone(Tree *other) const {
 	if (_hash != other->hash())
 		return false;
 
-	if (_type != other->_type ||
-		 _label.compare(other->_label) != 0 ||
-		 _children.size() != other->_children.size())
-		return false;
-
 	bool alltrue = true;
 	auto this_ptr = this;
 #pragma omp parallel default(shared) if(size() > SUBTREE_SIZE_CUTOFF)
