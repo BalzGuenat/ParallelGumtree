@@ -34,6 +34,7 @@ ax.set_ylabel('elapsed time [seconds]')
 ax.set_xlabel('input size [average number of nodes]')
 ax.set_title("Input tree size vs execution time")
 mark = ['o', 's']
+line_style = ['-','--']
 for i in range(0,2):
 	ax.set_color_cycle(None)
 	parallel_average_times = np.empty([max_threads_log, sizes])
@@ -43,11 +44,11 @@ for i in range(0,2):
 	for t in range(0,max_threads_log):
 		parallel_average_times[t] = np.nanmean(parallelGumtreeTimes[i][t],axis=0)
 		parallel_standard_deviation[t] = np.nanstd(parallelGumtreeTimes[i][t],axis=0)
-		ax.errorbar(average_linecount, parallel_average_times[t], parallel_standard_deviation[t], marker=mark[i], label=('C++, ' + str(2**t) + ' thread(s)' + label_extra))
+		ax.errorbar(average_linecount, parallel_average_times[t], parallel_standard_deviation[t], linestyle=line_style[i], marker=mark[i], label=('C++, ' + str(2**t) + ' thread(s)' + label_extra))
 	if runJava:
 		reference_average_times = np.nanmean(referenceGumtreeTimes[i],axis=0)
 		reference_standard_deviation = np.nanstd(referenceGumtreeTimes[i],axis=0)
-		ax.errorbar(average_linecount, reference_average_times, reference_standard_deviation, marker=mark[i], label='Ref. implementation' + label_extra)
+		ax.errorbar(average_linecount, reference_average_times, reference_standard_deviation, linestyle=line_style[i], marker=mark[i], label='Ref. implementation' + label_extra)
 lgd = ax.legend(loc='upper center', prop={'size':16}, bbox_to_anchor=(0.5,-0.1), ncol=2, fancybox=True, shadow=True)
 ax.set_xscale('log')
 plt.draw()
@@ -67,7 +68,7 @@ if show_speedup:
 				speedup_parallel = parallelGumtreeTimes[i][0]/parallelGumtreeTimes[i][t]
 				average_speedup_parallel[t] = np.nanmean(speedup_parallel,axis=0)
 				speedup_parallel_standard_deviation[t] = np.nanstd(speedup_parallel,axis=0)
-				ax.errorbar(average_linecount, average_speedup_parallel[t], speedup_parallel_standard_deviation[t], marker=mark[i], label=('C++, ' + str(2**t) + ' threads'+label_extra))
+				ax.errorbar(average_linecount, average_speedup_parallel[t], speedup_parallel_standard_deviation[t], linestyle=line_style[i], marker=mark[i], label=('C++, ' + str(2**t) + ' threads'+label_extra))
 				#ax.plot(average_linecount, speedup_parallel, marker='o')
 				if i == 0:
 					print "average speedup with " + str(2**t) + " threads for the match time: " + str(np.nanmean(speedup_parallel))
