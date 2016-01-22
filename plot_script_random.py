@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import filecmp
+from matplotlib.font_manager import FontProperties
 
 max_threads_log = 3
 show_speedup = True
@@ -33,8 +34,8 @@ ax.set_ylabel('elapsed time [seconds]')
 ax.set_xlabel('input size [average number of nodes]')
 ax.set_title("Input tree size vs execution time")
 mark = ['o', 's']
-col = ['r','b']
 for i in range(0,2):
+	ax.set_color_cycle(None)
 	parallel_average_times = np.empty([max_threads_log, sizes])
 	parallel_standard_deviation = np.empty([max_threads_log, sizes])
 	reference_standard_deviation = np.empty([max_threads_log, sizes])
@@ -42,22 +43,23 @@ for i in range(0,2):
 	for t in range(0,max_threads_log):
 		parallel_average_times[t] = np.nanmean(parallelGumtreeTimes[i][t],axis=0)
 		parallel_standard_deviation[t] = np.nanstd(parallelGumtreeTimes[i][t],axis=0)
-		ax.errorbar(average_linecount, parallel_average_times[t], parallel_standard_deviation[t], marker=mark[i], color=col[0], label=('C++, ' + str(2**t) + ' thread(s)' + label_extra))
+		ax.errorbar(average_linecount, parallel_average_times[t], parallel_standard_deviation[t], marker=mark[i], label=('C++, ' + str(2**t) + ' thread(s)' + label_extra))
 	if runJava:
 		reference_average_times = np.nanmean(referenceGumtreeTimes[i],axis=0)
 		reference_standard_deviation = np.nanstd(referenceGumtreeTimes[i],axis=0)
-		ax.errorbar(average_linecount, reference_average_times, reference_standard_deviation, marker=mark[i], color=col[1], label='Reference implementation' + label_extra)
-ax.legend(loc='upper left', prop={'size':16}).draggable()
+		ax.errorbar(average_linecount, reference_average_times, reference_standard_deviation, marker=mark[i], label='Ref. implementation' + label_extra)
+lgd = ax.legend(loc='upper center', prop={'size':16}, bbox_to_anchor=(0.5,-0.1), ncol=2, fancybox=True, shadow=True)
 ax.set_xscale('log')
 plt.draw()
-plt.savefig('timePlot.png', bbox_inches='tight')
-plt.savefig('timePlot.eps', bbox_inches='tight')
+plt.savefig('timePlot.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
+plt.savefig('timePlot.eps', bbox_extra_artists=(lgd,), bbox_inches='tight')
 if show_speedup:
 	# speedup plots vs the single thread c++ solution
 	if max_threads_log>1:
 		print "\nSpeedup vs single c++ thread"
 		fig, ax = plt.subplots()
 		for i in range(0,2):
+			ax.set_color_cycle(None)
 			speedup_parallel_standard_deviation = np.empty([max_threads_log, sizes])
 			average_speedup_parallel = np.empty([max_threads_log, sizes])
 			label_extra = ", total" if i==1 else ""
@@ -65,7 +67,7 @@ if show_speedup:
 				speedup_parallel = parallelGumtreeTimes[i][0]/parallelGumtreeTimes[i][t]
 				average_speedup_parallel[t] = np.nanmean(speedup_parallel,axis=0)
 				speedup_parallel_standard_deviation[t] = np.nanstd(speedup_parallel,axis=0)
-				ax.errorbar(average_linecount, average_speedup_parallel[t], speedup_parallel_standard_deviation[t], marker=mark[i], color=col[i], label=('C++, ' + str(2**t) + ' thread(s)'+label_extra))
+				ax.errorbar(average_linecount, average_speedup_parallel[t], speedup_parallel_standard_deviation[t], marker=mark[i], label=('C++, ' + str(2**t) + ' threads'+label_extra))
 				#ax.plot(average_linecount, speedup_parallel, marker='o')
 				if i == 0:
 					print "average speedup with " + str(2**t) + " threads for the match time: " + str(np.nanmean(speedup_parallel))
@@ -74,11 +76,11 @@ if show_speedup:
 		ax.set_ylabel('speedup')
 		ax.set_xlabel('input size [average number of nodes]')
 		ax.set_title("speedup with multiple threads")
-		ax.legend(loc='lower right').draggable()
+		lgd = ax.legend(loc='upper center', prop={'size':16}, bbox_to_anchor=(0.5,-0.1), ncol=2, fancybox=True, shadow=True)
 		ax.set_xscale('log')
 		plt.draw()
-		plt.savefig('speedupPlot_c.png', bbox_inches='tight')
-		plt.savefig('speedupPlot_c.eps', bbox_inches='tight')
+		plt.savefig('speedupPlot_c.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
+		plt.savefig('speedupPlot_c.eps', bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 # show plots
 plt.show()
