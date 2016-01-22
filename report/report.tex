@@ -59,8 +59,9 @@
 \emph{Gumtree} is an algorithm to compute a matching between the nodes of two similar abstract syntax trees.
 It was developed with the goal of improving code differencing tools used with version control systems and the original authors have written a single-threaded implementation in Java.
 Their evaluation showed that the \emph{Gumtree} algorithm is significantly slower than traditional \emph{diff} tools.
-To alleviate this disadvantage we implement the algorithm in C++ and parallelize the computation where possible.
+To alleviate this disadvantage we implement the algorithm in C++, parallelize the computation where possible and introduce an algorithmic optimization that effectively reduces the algorithmic complexity of a subprocedure  from $O(n^2)$ to $O(n)$.
 Our evaluation shows that on randomly generated problem instances and real world examples our implementation runs multiple times faster than the Java implementation but benefits little from multithreading.
+We argue that the greedy nature of the algorithm prevents an effective utilization of multiple threads.
 \end{abstract}
 
 \section{Introduction}\label{sec:intro}
@@ -243,13 +244,14 @@ The first component parses the mentioned encoding format and constructs the tree
 The second components simply writes the resulting matching to a file, again in the same format as the C++ implementation.
 The code for these component is available on Github\footnote{github.com/BalzGuenat/gumtree/tree/prallel-gt-reference}.
 
-\mypar{Finding potential for parallel execution}
+\mypar{Search space reduction}
 TODO: titles in this section are shit currently
 
 In the top-down phase we iterate over the cross product of two potentially large sets (see Algorithm \ref{alg:top-down}, line 12).
-Indeed, in tests with Electron (a C++ project) we see this cross product grow to a cardinality of several billion for a subtree height of 2.
+Indeed, in tests with C++ ASTs we see this cross product grow to a cardinality of several billion for a subtree height of 2.
 Instead of naively iterating over the entire cross product to find isomorphic subtrees we insert the nodes in $H_2$ into a hash map using a structure-based hash function which incorporates the type, label and recursively the descendants of a node.
 We then iterate over $H_1$, using the same hash function to look up potentially isomorphic subtrees in the hash map constructed before.
+This is effectively a reduction from $O(n^2)$ to $O(n)$ steps.
 With this approach, the number of pairs that need to be checked for isomorphism shrinks to a few thousand.
 
 \mypar{Checking for isomorphism}
@@ -295,7 +297,7 @@ We create $T_2$ by cloning $T_1$ and then create differences between them by rep
 
 \section{Experimental Results}\label{sec:exp}
 
-In this section we describe the setup we used to run performance tests, report the measurements made and present our interpretation of them.
+In this section we describe the setup we used to run performance tests and report the measurements made.
 
 \mypar{Experimental setup}
 To compile the project we use GCC 5.2.1 with the \texttt{-O2} optimization level.
@@ -303,49 +305,85 @@ We run our performance tests in Ubuntu 15.10 running on an Intel Core i7-3520M r
 The Java reference implementation is run in the OpenJDK Runtime Environment 1.8.0.
 We believe this system is a typical environment in which \emph{diff} programs such as \emph{Gumtree} are run in.
 
-We generate several different test cases for each target input size. where the  and then measure the time the different implementations take to produce the result.
+For each test case we measure the time the different implementations take to produce the result.
+We measure the total execution time including parsing and writing the result to a file as well as the time taken by the matching algorithm only.
+For randomized testing we generate multiple test cases for different input sizes and then average the measured execution time for a given size.
+For testing on real data we chose an open source C++ project, namely \emph{Electron}\footnote{github.com/atom/electron}, parsed different versions of it with Clang and converted the resulting ASTs to our encoding format.
+To get smaller input sizes with real data, we truncated the \emph{Electron} ASTs to the desired size.
 
-\mypar{Comparison to the reference implementation}
-We compare our implementation to the Java reference implementation.
+\mypar{Results on randomized test cases}
+We compare our implementation to the Java reference implementation using the randomly generated test cases.
 Figure \ref{fig:cpp_vs_java} shows the execution time of the implementations with various input sizes.
 The input size is the average number of nodes in the two input trees.
 We see that the C++ implementation is multiple times faster than the reference implementation.
-We also see that within a 
+We also see that within a input size class, the execution times vary greatly.
+This indicates that for randomized test cases input size is not the only factor determining the complexity of a given problem instance.
 
-\mypar{Scaling behavior}
-We examine how well our implementation scales when executed with multiple threads.
+We now examine how well our implementation scales when executed with multiple threads.
 Figure \ref{fig:cpp_speedup} shows the speedup achieved with 2 and 4 threads with various input sizes.
-We see that our implementation hardly ever achieves a speedup of over 1 and thus does not benefit at all from running on multiple threads.
-
-\mypar{Possible reasons for bad scaling}
-While we could achieve substantially improved performance in comparison to reference implementation, our implementation fails to benefit from multithreaded execution.
-An important observation to make is that the proportion of the computation that is executed in parallel depends heavily on the problem instance and is generally quite small.
-The parallelized check for isomorphism is only executed for subtrees with matching hash values i.e. for identical subtrees or, with low probability, for different subtrees with identical hash values.
-Similarly, we see that for a large majority of nodes, the candidate list in the bottom-up phase does not contain more than one candidate which makes it impossible to gain a speedup with multiple threads.
+We see that our implementation does not achieve a significant speedup and thus does not benefit from running on multiple threads.
+The overhead introduced by multithreaded execution often decreases performance, especially for smaller test cases.
 
 \begin{figure}
-	\includegraphics[width=\linewidth]{timePlot}
-	\caption{Execution time of the different implementations with various input sizes and 10 different randomly generated test cases for each input size. The bars show the standard deviation of the individual test cases from the mean execution time for that input size.}
+	\includegraphics[width=\linewidth]{measurements/random/timePlot}
+	\caption{Log-log plot of the execution time of the different implementations with various input sizes and 10 different randomly generated test cases for each input size. The bars show the standard deviation of the individual test cases from the mean execution time for that input size.}
 	\label{fig:cpp_vs_java}
 \end{figure}
 
 \begin{figure}
-	\includegraphics[width=\linewidth]{speedupPlot_c}
+	\includegraphics[width=\linewidth]{measurements/random/speedupPlot_c}
 	\caption{Speedup compared to single threaded execution with various input sizes and 10 different randomly generated test cases for each input size. The bars show the standard deviation of the individual test cases from the mean speedup for that input size.}
 	\label{fig:cpp_speedup}
 \end{figure}
+
+\mypar{Results on C++ ASTs}
+The negative results with randomized test cases and the large differences between individual test cases of similar size prompted us to perform additional testing on real data.
+Figure \ref{fig:electron_time} shows the execution time of the implementations on C++ ASTs with various input sizes.
+The execution time of the reference implementation quickly grows to a point where further testing is unreasonable which is why data points for larger sizes are missing.
+Presumably this is because of the missing search space reduction described in section \ref{sec:yourmethod} and shows how essential that optimization is.
+Regrettably we see similarly bad scaling behavior as with randomized tests with no significant speedup.
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{measurements/electron/timePlot}
+	\caption{Log-log plot of the execution time of the different implementations with Electron ASTs truncated to different input sizes with 5 different test cases for each input size. The bars show the standard deviation of the individual test cases from the mean execution time for that input size.}
+	\label{fig:electron_time}
+\end{figure}
+
+\section{Possible reasons for bad scaling}
+
+In this section we explain what we believe are the reasons why our implementation scales badly and argue that achieving significant speedup through parallelization is unlikely.
+
+While we could achieve substantially improved performance in comparison to the reference implementation, our implementation fails to benefit from multithreaded execution.
+An important observation to make is that the proportion of the computation that is executed in parallel depends on the problem instance and is generally quite small.
+The parallelized check for isomorphism is only executed for subtrees with matching hash values i.e. for identical subtrees or, with low probability, for different subtrees with identical hash values.
+Furthermore we see that for a large majority of nodes, the candidate list in the bottom-up phase does not contain more than one candidate which makes it impossible to gain a speedup with multiple threads.
+
+We believe that further improvements by parallelization would prove difficult because of the greedy nature of the \emph{Gumtree} algorithm.
+Consider the main loop of the top-down phase (see Algorithm \ref{alg:top-down}, line 3).
+The matchings computed in one iteration determine which subtrees will be considered in the next iteration.
+This introduces a dependency between the iterations.
+%In principle one could proceed with the iteration of a lower subtree height before the previous iteration has finished by iterating over but 
+
+Parallelizing the loop over pairs of potentially isomorphic subtrees in the same phase (see line 12) is feasible and is likely beneficial to the algorithm in its original form.
+With our optimization of reducing the search space however, the number of iterations and with it the potential benefit of parallelization is lowered drastically.
+Especially so since the majority of iterations now result in a match being found and added to either $A$ or $M$, both data structures that need to be kept consistent which would introduce additional overhead.
+
+The final loop of the top-down phase (see line 23) greedily decides on matchings to add to $M$ and, similar to the main loop, decisions made in earlier iterations determine which pairs are available in later iterations.
+
+The main loop of the bottom-up phase (see Algorithm \ref{alg:bottom-up}, line 1) again has the same problems as the seeds and similarity values computed in one iteration may depend on matchings made in earlier iterations.
 
 \section{Conclusions}
 
 In a first step we have implemented the \emph{Gumtree} algorithm in C++.
 We then found several sections in the algorithm that could be parallelized and used OpenMP to implement these parallelizations.
-To test and evaluate our implementation we needed pairs of trees large enough so we implemented a randomized tree generator to create these test cases.
+We also implemented an algorithmic optimization that turned out to be crucial.
+To test and evaluate our implementation we needed many pairs of large similar trees so we implemented a randomized tree generator to create these test cases.
+We also created test cases from the ASTs of the C++ project \emph{Electron}.
+
 Our performance tests with randomly generated trees showed that while our implementation runs faster than the Java reference implementation, it does not scale with multiple threads.
-We noticed that the proportion of execution time spent in parallel sections can heavily depend on the problem instance.
-This made us doubt the validity of the problem instances that we randomly generate in the sense that they do not resemble real changes made to ASTs closely enough.
-It is possible that the generated test cases tend to result in problem instances where only a small proportion of the time is spent in parallel sections.
-To eliminate the possibility of invalid test cases we used \emph{clang} to parse real software projects and dump their ASTs.
-We then converted these ASTs to our encoding format and used the so created test cases to evaluate the performance of the two implementations and their scaling behavior.
+Performance tests on real data confirmed the bad scaling behavior but showed that our implementation can in a few seconds solve instances which were previously unfeasible.
+We think the reason for bad scaling is the fundamentally greedy nature of the \emph{Gumtree} algorithm.
+This results in the proportion of the computational effort that is effectively parallelizable being quite small for typical ASTs.
 
 % References should be produced using the bibtex program from suitable
 % BiBTeX files (here: bibl_conf). The IEEEbib.bst bibliography
