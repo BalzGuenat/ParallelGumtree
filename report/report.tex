@@ -92,7 +92,7 @@ Firstly, it requires the integration of a parser for the respective language to 
 Secondly, parsing and subsequently finding a matching between the ASTs is more computationally involved and thus takes a longer time than traditional approaches.
 The paper reports an increase of execution time by factors 18 and 30, for a Java and JavaScript project respectively, compared to a textual diff program.
 Parsing accounts for around 55\% and 33\% of the total execution time.
-When testing the performance on a C++ project, we found that the execution time increases drastically to the point where practical application is impossible.
+When testing the performance of the given Java implementation on a C++ project, we found that the execution time increases drastically to the point where practical application is impossible.
 %The existing Java implementation\footnote{github.com/GumTreeDiff/gumtree} defers the generation of the AST to an external component so its overall performance is partially out of its control.
 %The matching itself is computed in a purely single-threaded manner.
 In an attempt to alleviate this performance disadvantage, we implement the \emph{Gumtree} algorithm in C++, optimize it and attempt to further increase the performance by parallelizing it where possible.
@@ -191,7 +191,7 @@ $T_1$ is traversed in post-order and for each non-leaf node $t_1$ that has not b
 A node $c \in T_2$ is a candidate for $t_1$ if it is unmatched, has the same type as $t_1$ and has some matching descendants.
 $t_1$ is then matched with the candidate with the largest similarity value $sim(t_1,c,M)$ provided it is over a certain threshold $minSim$.
 
-See Algorithm \ref{alg:bottom-up} for a full description of the top-down phase.
+See Algorithm \ref{alg:bottom-up} for a full description of the bottom-up phase.
 The mapping $M$ resulting from this phase is the final output of the \emph{Gumtree} algorithm without \emph{recovery mappings}.
 
 \begin{algorithm}
@@ -245,8 +245,6 @@ The second components simply writes the resulting matching to a file, again in t
 The code for these component is available on Github\footnote{github.com/BalzGuenat/gumtree/tree/prallel-gt-reference}.
 
 \mypar{Search space reduction}
-TODO: titles in this section are shit currently
-
 In the top-down phase we iterate over the cross product of two potentially large sets (see Algorithm \ref{alg:top-down}, line 12).
 Indeed, in tests with C++ ASTs we see this cross product grow to a cardinality of several billion for a subtree height of 2.
 Instead of naively iterating over the entire cross product to find isomorphic subtrees we insert the nodes in $H_2$ into a hash map using a structure-based hash function which incorporates the type, label and recursively the descendants of a node.
@@ -254,7 +252,7 @@ We then iterate over $H_1$, using the same hash function to look up potentially 
 This is effectively a reduction from $O(n^2)$ to $O(n)$ steps.
 With this approach, the number of pairs that need to be checked for isomorphism shrinks to a few thousand.
 
-\mypar{Checking for isomorphism}
+\mypar{Isomorphism matching} % or something like "Detecting isomporphism" or "Finding isomorphism"
 Checking whether two subtrees are isomorphic is a read-only operation that is easily partitioned into independent subtasks on non-overlapping data.
 As such it lends itself to parallel execution.
 To check if two subtrees are isomorphic we first check whether their hash values are equal and only if they are we compare the node-internal values and children.
@@ -340,7 +338,7 @@ The overhead introduced by multithreaded execution often decreases performance, 
 The negative results with randomized test cases and the large differences between individual test cases of similar size prompted us to perform additional testing on real data.
 Figure \ref{fig:electron_time} shows the execution time of the implementations on C++ ASTs with various input sizes.
 The execution time of the reference implementation quickly grows to a point where further testing is unreasonable which is why data points for larger sizes are missing.
-Presumably this is because of the missing search space reduction described in section \ref{sec:yourmethod} and shows how essential that optimization is.
+Presumably this is because of the missing search space reduction described in section \ref{sec:yourmethod} and it shows how essential that optimization is.
 Regrettably we see similarly bad scaling behavior as with randomized tests with no significant speedup.
 
 \begin{figure}
